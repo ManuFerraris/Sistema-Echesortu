@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { MikroORM, RequestContext } from "@mikro-orm/core";
 import config from "./db/mikro-orm.config";
 import { userContext } from "./utils/userContext";
@@ -8,6 +9,8 @@ import { Ticket, MedioPago } from "./entities/ticket";
 import { Inscripcion, EstadoInscripcion } from "./entities/inscripcion";
 
 export const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -151,73 +154,73 @@ app.use(express.json());
     });
 
     // GET /personas/:id/estado-cuenta
-app.get("/personas/:id/estado-cuenta", async (req, res) => {
-    const em = orm.em.fork();
-    const idPersona = Number(req.params.id);
+    app.get("/personas/:id/estado-cuenta", async (req, res) => {
+        const em = orm.em.fork();
+        const idPersona = Number(req.params.id);
 
-    try {
-        // 1. Buscamos la Persona
-        const persona = await em.findOneOrFail(Persona, { nro: idPersona });
+        try {
+            // 1. Buscamos la Persona
+            const persona = await em.findOneOrFail(Persona, { nro: idPersona });
 
-        // 2. Buscamos sus Inscripciones y cargamos (populate) Actividad y Cuotas
-        //    Esto es clave: Traemos todo relacionado en una sola consulta eficiente.
-        const inscripciones = await em.find(Inscripcion,
-            { persona }, 
-            { populate: ['actividad', 'cuotas'] });
+            // 2. Buscamos sus Inscripciones y cargamos (populate) Actividad y Cuotas
+            //    Esto es clave: Traemos todo relacionado en una sola consulta eficiente.
+            const inscripciones = await em.find(Inscripcion,
+                { persona }, 
+                { populate: ['actividad', 'cuotas'] });
 
-        // 3. Calculamos Totales (Lógica de Presentación)
-        let totalDeuda = 0;
-        let totalPagadoHistorico = 0;
+            // 3. Calculamos Totales (Lógica de Presentación)
+            let totalDeuda = 0;
+            let totalPagadoHistorico = 0;
 
-        // Mapeamos para darle un formato lindo al JSON
-        const detalleActividades = inscripciones.map(insc => {
-            // Filtramos cuotas que no estén pagadas al 100% para ver deuda rápida
-            const cuotasPendientes = insc.cuotas
-                .getItems() // MikroORM devuelve una Collection, usamos getItems()
-                .filter(c => c.estado !== EstadoCuota.PAGADA)
-                .map(c => {
-                    totalDeuda += (Number(c.montoOriginal) - Number(c.saldoPagado));
-                    return {
-                        mes: c.mes,
-                        anio: c.anio,
-                        monto: c.montoOriginal,
-                        saldoPendiente: Number(c.montoOriginal) - Number(c.saldoPagado),
-                        estado: c.estado
-                    };
+            // Mapeamos para darle un formato lindo al JSON
+            const detalleActividades = inscripciones.map(insc => {
+                // Filtramos cuotas que no estén pagadas al 100% para ver deuda rápida
+                const cuotasPendientes = insc.cuotas
+                    .getItems() // MikroORM devuelve una Collection, usamos getItems()
+                    //.filter(c => c.estado !== EstadoCuota.PAGADA)
+                    .map(c => {
+                        totalDeuda += (Number(c.montoOriginal) - Number(c.saldoPagado));
+                        return {
+                            id: c.numero,
+                            mes: c.mes,
+                            anio: c.anio,
+                            monto: c.montoOriginal,
+                            saldoPendiente: Number(c.montoOriginal) - Number(c.saldoPagado),
+                            estado: c.estado
+                        };
+                    });
+
+                // Sumamos lo pagado en todas las cuotas (histórico)
+                insc.cuotas.getItems().forEach(c => {
+                    totalPagadoHistorico += Number(c.saldoPagado);
                 });
 
-            // Sumamos lo pagado en todas las cuotas (histórico)
-            insc.cuotas.getItems().forEach(c => {
-                totalPagadoHistorico += Number(c.saldoPagado);
+                return {
+                    actividad: insc.actividad.nombre,
+                    fechaIngreso: insc.fechaInscripcion,
+                    estado: insc.estado,
+                    deudaEnEstaActividad: cuotasPendientes.reduce((acc, curr) => acc + curr.saldoPendiente, 0),
+                    cuotasPendientes: cuotasPendientes
+                };
             });
 
-            return {
-                actividad: insc.actividad.nombre,
-                fechaIngreso: insc.fechaInscripcion,
-                estado: insc.estado,
-                deudaEnEstaActividad: cuotasPendientes.reduce((acc, curr) => acc + curr.saldoPendiente, 0),
-                cuotasPendientes: cuotasPendientes
-            };
-        });
-
-        // 4. Respuesta consolidada
-        res.json({
-            cliente: {
-                nombre: persona.nombre,
-                apellido: persona.apellido,
-                dni: persona.dni_cuit
-            },
-            resumenFinanciero: {
-                totalDeudaClub: totalDeuda,  // El número rojo grande
-                totalPagadoHistorico: totalPagadoHistorico // Dato curioso para el club
-            },
-            detalle: detalleActividades
-        });
-
+            // 4. Respuesta consolidada
+            res.json({
+                cliente: {
+                    nombre: persona.nombre,
+                    apellido: persona.apellido,
+                    dni: persona.dni_cuit
+                },
+                resumenFinanciero: {
+                    totalDeudaClub: totalDeuda,  // El número rojo grande
+                    totalPagadoHistorico: totalPagadoHistorico // Dato curioso para el club
+                },
+                detalle: detalleActividades
+            });
         } catch (error: any) {
             res.status(404).json({ error: "Persona no encontrada o error interno" });
         }
-    });
+        });
 
     app.listen(3000, () => {
         console.log("Servidor corriendo en http://localhost:3000");

@@ -1,3 +1,0 @@
-npm install @mikro-orm/cli --save-dev
-npx mikro-orm schema:fresh --run
-npx ts-node src/seed.ts
