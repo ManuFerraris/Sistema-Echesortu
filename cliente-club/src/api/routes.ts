@@ -3,7 +3,7 @@ export const API_ROUTES = {
         login: '/api/auth/login',
     },
     personas: {
-        list: '/personas',
+        list: '/api/personas',
         create: '/api/personas',
         // Función para generar la URL dinámica
         getById: (id: number | string) => `/api/personas/${id}`,

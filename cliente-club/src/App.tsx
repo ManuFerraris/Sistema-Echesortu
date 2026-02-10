@@ -1,27 +1,32 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Navbar } from './api/components/navbar';
-import { ProcesosPage } from './pages/procesosPage';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/authContext';
+import { ProtectedRoute } from './api/components/protectedRoute';
 
 import CajaPage from './pages/cajaPage';
 import { NuevoSocioPage } from './pages/nuevoSocioPage';
+import { LoginPage } from './pages/loginPage';
+import { ProcesosPage } from './pages/procesosPage';
 
 function App() {
   return (
-    <BrowserRouter>
-      {/* El Navbar aparece en TODAS las páginas */}
-      <Navbar />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* --- RUTA PÚBLICA --- */}
+          <Route path="/login" element={<LoginPage />} />
 
-      <Routes>
-        {/* Ruta Principal: La Caja */}
-        <Route path="/" element={<CajaPage />} />
-        
-        {/* Ruta Nueva: Alta de Socios */}
-        <Route path="/nuevo-socio" element={<NuevoSocioPage />} />
+          {/* --- RUTAS PRIVADAS (El Guardián protege todo lo que está adentro) --- */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<CajaPage />} />
+            <Route path="/nuevo-socio" element={<NuevoSocioPage />} />
+            <Route path="/procesos" element={<ProcesosPage />} />
+          </Route>
 
-        {/* Ruta Nueva: Procesos Administrativos */}
-        <Route path="/procesos" element={<ProcesosPage />} />
-      </Routes>
-    </BrowserRouter>
+          {/* CATCH ALL: Si entra a cualquier ruta desconocida, mandar a Home (o Login si no tiene sesión) */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
