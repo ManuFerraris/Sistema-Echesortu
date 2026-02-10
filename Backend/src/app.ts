@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import { orm } from "./shared/db/orm";
 import { RequestContext } from "@mikro-orm/core";
-import { userContext } from "./modules/utils/userContext";
+import { authMiddleware } from "./shared/middleware/auth.middleware";
+import { authRouter } from "./modules/auth/infrastructure/auth.routes";
 import { personaRouter } from "./modules/personas/infrastructure/persona.route";
 import { cuotaRouter } from "./modules/coutas/infrastructure/cuota.routes";
 import { pagoRouter } from "./modules/pagos/infrastructure/pago.routes";
@@ -11,6 +12,7 @@ import { inscripcionRouter } from "./modules/inscripcion/infrastructure/inscripc
 import { actividadRouter } from "./modules/actividad/infrastructure/actividad.routes";
 
 export const app = express();
+
 app.locals.orm = orm;
 
 app.use(cors());
@@ -26,14 +28,19 @@ app.use((req, res, next) => {
     }
 });
 
-// 2. Middleware de Usuario (AsyncLocalStorage)
-app.use((req, res, next) => {
-    const usuario = req.headers["x-user"]?.toString() || "anonimo";
-    userContext.run(usuario, () => {
-        next();
-    });
-});
+// ========================
+// ZONA PÚBLICA (Sin Token)
+// ========================
+app.use("/api/auth", authRouter);
 
+// ==========================
+// ZONA DE CONTROL (El Peaje)
+// ==========================
+app.use('/api', authMiddleware);
+
+// ========================
+// ZONA PRIVADA (Protegida)
+// ========================
 app.use("/api/personas", personaRouter);
 app.use("/api/cuotas", cuotaRouter);
 app.use("/api/pagos", pagoRouter);
@@ -44,4 +51,3 @@ app.use("/api/actividades", actividadRouter);
 app.use((_, res) => {
     res.status(404).json({ message: "Ruta no encontrada" });
 });
-
