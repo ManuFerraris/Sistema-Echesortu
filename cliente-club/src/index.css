@@ -1,11 +1,12 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
+  /* Colores base para que no te lastime los ojos el blanco puro */
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #213547;
+  background-color: #f8fafc; /* Un gris muy clarito de fondo queda pro */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,10 +25,18 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  min-width: 100vw;
   min-height: 100vh;
+  display: block;
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  text-align: left;
 }
 
 h1 {
@@ -36,15 +45,7 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
 }
 button:hover {
   border-color: #646cff;
