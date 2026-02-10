@@ -1,10 +1,10 @@
 import { MikroORM } from "@mikro-orm/core";
-import config from "./db/mikro-orm.config";
-import { Persona } from "./entities/persona";
-import { Actividad } from "./entities/actividad";
-import { Inscripcion } from "./entities/inscripcion";
-import { Cuota, EstadoCuota } from "./entities/cuota";
-import { Ticket, MedioPago } from "./entities/ticket";
+import config from "./shared/db/mikro-orm.config";
+import { Persona } from "./modules/auditoria/persona";
+import { Actividad } from "./modules/auditoria/actividad";
+import { Inscripcion } from "./modules/inscripcion/inscripcion";
+import { Cuota, EstadoCuota } from "./modules/auditoria/cuota";
+import { Ticket, MedioPago } from "./modules/ticket/ticket";
 
 async function main() {
     // 1. Conectar
