@@ -37,3 +37,10 @@ export interface ComprobantePago {
     estadoCuota: string;
     fechaPago: string; // Las fechas en JSON viajan como string
 }
+
+export interface Actividad {
+    numero: number;
+    nombre: string;
+    descripcion: string; 
+    precioActual: number;
+}

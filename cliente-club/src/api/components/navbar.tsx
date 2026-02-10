@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Home, UserPlus } from "lucide-react";
+import { Home, UserPlus, Settings } from "lucide-react";
 
 export function Navbar() {
     return (
@@ -15,6 +15,9 @@ export function Navbar() {
             </Link>
             <Link to="/nuevo-socio" style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <UserPlus size={20} /> Nuevo Socio
+            </Link>
+            <Link to="/procesos" style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Settings size={20} /> Admin
             </Link>
         </nav>
     );

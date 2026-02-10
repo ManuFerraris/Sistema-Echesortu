@@ -19,5 +19,11 @@ export const API_ROUTES = {
     },
     cuotas: {
         generarMasiva: '/api/cuotas/generar-masiva',
+    },
+    actividades: {
+        list: '/api/actividades',
+    },
+    inscripciones: {
+        create: '/api/inscripciones',
     }
 } as const;

@@ -4,12 +4,14 @@ import { AxiosError } from 'axios';
 import { API_ROUTES } from '../api/routes';
 import { Search, UserCheck, CreditCard, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import type { ApiResponse, EstadoCuenta, CuotaResumen, ComprobantePago } from '../types';
+import { ModalInscripcion } from '../api/components/modalInscripcion';
 
 function CajaPage() {
     const [idBusqueda, setIdBusqueda] = useState('');
     const [datos, setDatos] = useState<EstadoCuenta | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [mostrarInscripcion, setMostrarInscripcion] = useState(false);
     
     // FILTROS
     const [soloDeudas, setSoloDeudas] = useState(false);
@@ -38,12 +40,9 @@ function CajaPage() {
             setError(res.data.messages[0] || 'Error al buscar socio');
             }
 
-        } catch (error) { // <--- NO poner ': any' aquí
+        } catch (error) {
             console.error(error);
-            // "Casteamos" el error para decirle a TS que es un error de Axios
             const err = error as AxiosError<ApiResponse<null>>;
-
-            // Ahora TS sabe que 'err.response' existe
             const msg = err.response?.data?.messages?.[0] || 'Socio no encontrado o error de conexión';
             console.log("Error detallado:", err.response);
             setError(msg);
@@ -91,17 +90,17 @@ function CajaPage() {
     return (
         <div style={{ 
             padding: '2rem', 
-            width: '100%',          // Que intente ocupar todo el ancho posible
-            maxWidth: '1600px',     // ...hasta un límite razonable (para que no se deforme en pantallas 4k)
-            margin: '0 auto',       // Centrado horizontalmente
-            boxSizing: 'border-box' // Asegura que el padding no sume al ancho total
+            width: '100%',
+            maxWidth: '1600px',
+            margin: '0 auto',
+            boxSizing: 'border-box'
         }}>
         <h1>🏊‍♂️ Gestión de Caja</h1>
         
         {/* BUSCADOR */}
         <form onSubmit={buscarSocio} style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
             <input 
-            type="number" 
+            type="number"
             placeholder="Ingrese Nro de Socio (ej: 1)" 
             value={idBusqueda}
             onChange={(e) => setIdBusqueda(e.target.value)}
@@ -133,7 +132,25 @@ function CajaPage() {
                 <div>
                 <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#1e293b' }}>{datos.cliente.nombre} {datos.cliente.apellido}</h2>
                 <p style={{ margin: '5px 0 0 0', color: '#64748b' }}>DNI: {datos.cliente.dni}</p>
+                {/* NUEVO BOTÓN */}
+                <button 
+                    onClick={() => setMostrarInscripcion(true)}
+                    style={{ 
+                        background: 'transparent', border: '1px solid #2563eb', color: '#2563eb', 
+                        padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '500' 
+                    }}
+                >
+                    + Agregar Actividad
+                </button>
                 </div>
+                {mostrarInscripcion && datos && (
+                    <ModalInscripcion 
+                        idPersona={Number(idBusqueda)} 
+                        nombrePersona={`${datos.cliente.nombre} ${datos.cliente.apellido}`}
+                        onClose={() => setMostrarInscripcion(false)}
+                        onSuccess={() => buscarSocio()} // Recarga la caja para ver la nueva deuda
+                    />
+                )}
             </div>
 
             {/* TARJETAS DE SALDO */}
@@ -252,7 +269,7 @@ function CajaPage() {
                         <select 
                             value={medioPago} 
                             onChange={e => setMedioPago(e.target.value)}
-                            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'white' }}
+                            style={{ width: '100%', padding: '12px', fontSize: '18px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                         >
                             <option value="efectivo">💵 Efectivo</option>
                             <option value="transferencia">🏦 Transferencia Bancaria</option>
