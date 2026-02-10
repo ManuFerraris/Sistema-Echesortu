@@ -32,6 +32,11 @@ export class ObtenerEstadoCuenta {
 
         // 4. Mapeamos la data compleja a nuestro DTO limpio
         const detalleActividades = inscripciones.map(insc => {
+
+            let nombreMostrar = insc.actividad.nombre;
+            if (insc.actividad.descripcion) {
+                nombreMostrar += ` (${insc.actividad.descripcion})`;
+            };
             
             // Procesamos las cuotas de esta inscripción
             const cuotasMapeadas: CuotaResumenDTO[] = insc.cuotas
@@ -57,7 +62,7 @@ export class ObtenerEstadoCuenta {
             const deudaActividad = cuotasMapeadas.reduce((acc, curr) => acc + curr.saldoPendiente, 0);
 
             return {
-                actividad: insc.actividad.nombre,
+                actividad: nombreMostrar,
                 fechaIngreso: insc.fechaInscripcion,
                 estado: insc.estado,
                 deudaEnEstaActividad: deudaActividad,
