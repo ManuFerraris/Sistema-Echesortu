@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { MikroORM } from '@mikro-orm/core';
 import { RegistrarPago } from '../application/registrarPago';
+import { generarReciboPDF } from '../../../shared/services/pdf.service';
 
 export const registrarPago = async (req: Request, res: Response) => {
     try {
@@ -11,11 +12,23 @@ export const registrarPago = async (req: Request, res: Response) => {
         const casoUso = new RegistrarPago();
         const resultado = await casoUso.ejecutar(dto, em);
 
-        res.status(resultado.status).json({
-            success: resultado.success,
-            messages: resultado.messages,
-            data: resultado.data
-        });
+        if (!resultado.success || !resultado.data) {
+            res.status(resultado.status).json({
+                success: resultado.success,
+                messages: resultado.messages,
+                data: null
+            });
+            return;
+        };
+
+        // SI ES ÉXITO: Generamos y enviamos el PDF
+        // Headers para PDF
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename=recibo-${resultado.data.nroComprobante}.pdf`);
+        
+        // Stream directo al cliente
+        generarReciboPDF(resultado.data, res);
+        return;
 
     } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : "Error desconocido";
@@ -25,5 +38,6 @@ export const registrarPago = async (req: Request, res: Response) => {
             messages: ["Error interno al procesar el pago", msg],
             data: null
         });
+        return;
     };
 };

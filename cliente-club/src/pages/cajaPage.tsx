@@ -3,9 +3,15 @@ import { api } from '../api/axios';
 import { AxiosError } from 'axios';
 import { API_ROUTES } from '../api/routes';
 import { Search, UserCheck, CreditCard, X, CheckCircle, AlertTriangle } from 'lucide-react';
-import type { ApiResponse, EstadoCuenta, CuotaResumen, ComprobantePago, Persona } from '../types';
+import type { ApiResponse, EstadoCuenta, CuotaResumen, Persona } from '../types';
 import { ModalInscripcion } from '../api/components/modalInscripcion';
 import { ModalSeleccionSocio } from '../api/components/modalSeleccionSocio';
+
+interface PagoParcial {
+    id: string;
+    monto: number;
+    metodo: string;
+}
 
 function CajaPage() {
     const [idBusqueda, setIdBusqueda] = useState('');
@@ -21,10 +27,17 @@ function CajaPage() {
 
     // ESTADOS PARA EL PAGO
     const [cuotaAPagar, setCuotaAPagar] = useState<CuotaResumen | null>(null);
-    const [montoPagar, setMontoPagar] = useState<string>('');
-    const [medioPago, setMedioPago] = useState('efectivo');
     const [observacion, setObservacion] = useState('');
     const [procesandoPago, setProcesandoPago] = useState(false);
+
+    // NUEVOS ESTADOS PARA LA LISTA
+    const [pagosList, setPagosList] = useState<PagoParcial[]>([]);
+    const [montoInput, setMontoInput] = useState<string>(''); // Para el input temporal
+    const [medioInput, setMedioInput] = useState('efectivo'); // Para el select temporal
+
+
+    const totalSumado = pagosList.reduce((acc, p) => acc + p.monto, 0);
+    const saldoRestante = cuotaAPagar ? cuotaAPagar.saldoPendiente - totalSumado : 0;
 
     const buscarSocio = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -78,7 +91,7 @@ function CajaPage() {
         }
     };
 
-    // 3. Función callback cuando eligen alguien del modal
+    // Función callback cuando eligen alguien del modal
     const handleSeleccionarSocio = (socio: Persona) => {
         setMostrarModalSeleccion(false);
         setIdBusqueda(String(socio.nro));
@@ -102,32 +115,91 @@ function CajaPage() {
 
     const abrirModalPago = (cuota: CuotaResumen) => {
         setCuotaAPagar(cuota);
-        setMontoPagar(cuota.saldoPendiente.toString());
-        setMedioPago('efectivo');
         setObservacion('');
+        
+        // Reseteamos la lista de pagos
+        setPagosList([]);
+        
+        // Sugerimos pagar el total pendiente en el input inicial
+        setMontoInput(cuota.saldoPendiente.toString());
+        setMedioInput('efectivo');
+    };
+
+    const agregarPagoALista = () => {
+        const valor = Number(montoInput);
+        
+        // Validaciones simples
+        if (!valor || valor <= 0) return alert("Ingrese un monto válido");
+        if (valor > saldoRestante && saldoRestante > 0) {
+            if(!confirm(`Estás pagando $${valor} pero solo restan $${saldoRestante}. ¿Deseas continuar generando saldo a favor?`)) return;
+        }
+
+        const nuevoPago: PagoParcial = {
+            id: Date.now().toString(), // ID temporal
+            monto: valor,
+            metodo: medioInput
+        };
+
+        setPagosList([...pagosList, nuevoPago]);
+
+        // Calcular cuánto falta para sugerir en el input del siguiente pago
+        const nuevoRestante = saldoRestante - valor;
+        setMontoInput(nuevoRestante > 0 ? nuevoRestante.toString() : '');
+    };
+
+    const quitarPagoDeLista = (id: string) => {
+        setPagosList(pagosList.filter(p => p.id !== id));
     };
 
     const confirmarPago = async () => {
-        if (!cuotaAPagar) return;
+        if (!cuotaAPagar || pagosList.length === 0) return;
+        
         setProcesandoPago(true);
+        
         try {
+            // Armamos el payload con la estructura nueva
             const payload = {
                 cuotaId: cuotaAPagar.id,
-                monto: Number(montoPagar),
-                medioPago: medioPago,
-                observacion: observacion || 'Pago Web'
+                // Mapeamos nuestra lista local al formato del DTO del backend
+                pagos: pagosList.map(p => ({
+                    monto: p.monto,
+                    medioPago: p.metodo.toUpperCase(), // Asegurar que coincida con el ENUM del back
+                    observacion: observacion // Observación general o por ítem, como prefieras
+                }))
             };
 
-            const res = await api.post<ApiResponse<ComprobantePago>>(API_ROUTES.pagos.create, payload);
+            // NOTA: Usamos fetch nativo o configuramos axios para responseType: 'blob'
+            // Si usás tu instancia 'api' de axios, tenés que asegurarte que no intente parsear JSON automáticamente
+            // Para simplificar, acá uso fetch, pero con axios es parecido:
+            
+            /* Con AXIOS (Recomendado si ya tenés interceptores de auth) */
+            const res = await api.post(API_ROUTES.pagos.create, payload, {
+                responseType: 'blob', // CLAVE: Decirle a Axios que esperamos un archivo
+                validateStatus: (status) => status < 500 // Para poder leer el JSON de error 400
+            });
 
-            if (res.data.success) {
-                alert(`¡Pago registrado! Ticket #${res.data.data.ticketId} 💸`); // Podemos usar los datos tipados
+            // Verificamos el tipo de contenido
+            const isPdf = res.headers['content-type']?.includes('application/pdf');
+
+            if (isPdf) {
+                // ÉXITO: Descargar/Abrir PDF
+                const blob = new Blob([res.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank'); // Abrir en nueva pestaña para imprimir
+
+                // Limpieza
+                alert('¡Pago registrado correctamente!');
                 setCuotaAPagar(null);
-                await buscarSocio(); 
+                setPagosList([]);
+                await buscarSocio(); // Refrescar estado de cuenta
             } else {
-                alert("Error: " + res.data.messages.join(", "));
+                // ERROR: Intentar leer el JSON del blob (caso raro con responseType blob)
+                // Si axios detecta JSON a veces lo parsea solo, pero con blob forzado hay que convertirlo
+                const textData = await res.data.text(); 
+                const errorJson = JSON.parse(textData);
+                alert("Error: " + (errorJson.messages?.join(", ") || "Error desconocido"));
             }
-        } catch (error) { 
+        }catch (error) { 
             const err = error as AxiosError<ApiResponse<null>>;
             const msg = err.response?.data?.messages?.join(", ") || "Error al procesar el pago";
             alert(msg);
@@ -286,75 +358,120 @@ function CajaPage() {
             </div>
         )}
 
-        {/* --- MODAL DE PAGO --- */}
+        {/* --- MODAL DE PAGO (NUEVO DISEÑO MULTI-PAGO) --- */}
         {cuotaAPagar && (
             <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
             }} onClick={() => setCuotaAPagar(null)}>
                 
-            <div style={{ background: 'white', padding: '0', borderRadius: '12px', width: '450px', maxWidth: '90%', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} onClick={e => e.stopPropagation()}>
-                
-                <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Cobrar Cuota {cuotaAPagar.mes}/{cuotaAPagar.anio}</h2>
-                    <button onClick={() => setCuotaAPagar(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24} /></button>
-                </div>
-
-                <div style={{ padding: '25px' }}>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>Monto a Pagar ($)</label>
-                        <input 
-                            type="number" 
-                            value={montoPagar} 
-                            onChange={e => setMontoPagar(e.target.value)}
-                            style={{ width: '100%', padding: '12px', fontSize: '18px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                            autoFocus
-                        />
+                <div style={{ background: 'white', borderRadius: '12px', width: '500px', maxWidth: '95%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+                    
+                    {/* CABECERA */}
+                    <div style={{ padding: '20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#1e293b' }}>Cobrar Cuota {cuotaAPagar.mes}/{cuotaAPagar.anio}</h2>
+                            <p style={{ margin: '5px 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+                                Deuda Original: <strong>${cuotaAPagar.saldoPendiente}</strong>
+                            </p>
+                        </div>
+                        <button onClick={() => setCuotaAPagar(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={24} /></button>
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>Medio de Pago</label>
-                        <select 
-                            value={medioPago} 
-                            onChange={e => setMedioPago(e.target.value)}
-                            style={{ width: '100%', padding: '12px', fontSize: '18px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    <div style={{ padding: '20px' }}>
+                        
+                        {/* 1. LISTA DE PAGOS AGREGADOS */}
+                        <div style={{ marginBottom: '20px', minHeight: '60px', background: '#f1f5f9', borderRadius: '8px', padding: '10px' }}>
+                            {pagosList.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem', margin: '10px 0' }}>No hay pagos agregados aún.</p>
+                            ) : (
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                    {pagosList.map(p => (
+                                        <li key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'white', marginBottom: '5px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                                            <span style={{ fontSize: '0.9rem' }}>
+                                                <strong>${p.monto}</strong> <span style={{ color: '#64748b' }}>({p.metodo})</span>
+                                            </span>
+                                            <button onClick={() => quitarPagoDeLista(p.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16}/></button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {/* TOTALIZADOR */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #cbd5e1', fontSize: '0.95rem' }}>
+                                <span>Total a Pagar:</span>
+                                <span style={{ fontWeight: 'bold', color: saldoRestante < 0 ? '#16a34a' : '#1e293b' }}>
+                                    ${totalSumado} 
+                                    {saldoRestante > 0 && <span style={{ color: '#ef4444', marginLeft: '5px', fontSize: '0.8rem' }}>(Faltan ${saldoRestante})</span>}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 2. FORMULARIO PARA AGREGAR PAGO */}
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '20px' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: '#334155', marginBottom: '4px' }}>Monto</label>
+                                <input 
+                                    type="number" 
+                                    value={montoInput} 
+                                    onChange={e => setMontoInput(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && agregarPagoALista()}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: '#334155', marginBottom: '4px' }}>Medio</label>
+                                <select 
+                                    value={medioInput} 
+                                    onChange={e => setMedioInput(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+                                >
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="transferencia">Transferencia</option>
+                                    <option value="debito">Débito</option>
+                                    <option value="credito">Crédito</option>
+                                    <option value="mercadopago">MercadoPago</option>
+                                </select>
+                            </div>
+                            <button 
+                                onClick={agregarPagoALista}
+                                style={{ padding: '10px 15px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                +
+                            </button>
+                        </div>
+
+                        {/* OBSERVACIONES */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <input 
+                                type="text" 
+                                value={observacion} 
+                                onChange={e => setObservacion(e.target.value)}
+                                placeholder="Observaciones generales (opcional)"
+                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem' }}
+                            />
+                        </div>
+
+                        {/* BOTÓN CONFIRMAR */}
+                        <button 
+                            onClick={confirmarPago} 
+                            disabled={procesandoPago || pagosList.length === 0} // Deshabilitado si lista vacía
+                            style={{ 
+                                width: '100%', padding: '16px', 
+                                background: pagosList.length === 0 ? '#cbd5e1' : '#16a34a', 
+                                color: 'white', border: 'none', borderRadius: '8px', 
+                                fontSize: '16px', fontWeight: 'bold', cursor: pagosList.length === 0 ? 'not-allowed' : 'pointer',
+                                display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+                                transition: 'background 0.2s'
+                            }}
                         >
-                            <option value="efectivo">💵 Efectivo</option>
-                            <option value="transferencia">🏦 Transferencia Bancaria</option>
-                            <option value="debito">💳 Tarjeta Débito</option>
-                            <option value="credito">💳 Tarjeta Crédito</option>
-                            <option value="mercadopago">📲 Mercado Pago</option>
-                            <option value="otro">🔖 Otro</option>
-                        </select>
+                            {procesandoPago ? 'Procesando...' : <><CheckCircle size={20} /> Confirmar e Imprimir</>}
+                        </button>
                     </div>
-
-                    <div style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>Observaciones (Opcional)</label>
-                        <input 
-                            type="text" 
-                            value={observacion} 
-                            onChange={e => setObservacion(e.target.value)}
-                            placeholder="Ej: Pago parcial, trajo cambio..."
-                            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                        />
-                    </div>
-
-                    <button 
-                    onClick={confirmarPago} 
-                    disabled={procesandoPago}
-                    style={{ 
-                        width: '100%', padding: '16px', background: '#16a34a', color: 'white', 
-                        border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
-                        opacity: procesandoPago ? 0.7 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
-                    }}
-                    >
-                    {procesandoPago ? 'Procesando...' : <><CheckCircle size={20} /> Confirmar Pago</>}
-                    </button>
                 </div>
-            </div>
             </div>
         )}
+
         {/* MODAL DE DESAMBIGUACIÓN */}
         {mostrarModalSeleccion && (
             <ModalSeleccionSocio 
