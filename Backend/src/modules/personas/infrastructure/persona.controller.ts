@@ -9,6 +9,7 @@ import { ActualizarPersona } from "../application/actualizarPersonas";
 import { DarDeBajaPersona } from "../application/eliminarPersona";
 import { ReactivarPersona } from "../application/reactivarPersona";
 import { ObtenerEstadoCuenta } from "../application/obtenerEstadoCuenta";
+import { ObtenerPersona } from "../application/obtenerPersona";
 
 export const getPersonas = async (req: Request, res: Response):Promise<void> => {
     try{
@@ -40,33 +41,52 @@ export const getPersonas = async (req: Request, res: Response):Promise<void> => 
 
 export const getPersona = async (req: Request, res: Response):Promise<void> => {
     try{
-        const {valor: codVal, error:codError} = validarCodigo(req.params.nro, 'Nro de persona');
+        const orm = req.app.locals.orm as MikroORM;
+        const em = orm.em.fork();
+
+        const termino = req.query.q as string;
+
+        const repo = new PersonaRepositoryORM(em);
+        const casoUso = new BuscarPersona(repo);
+
+        const result = await casoUso.ejecutar(termino);
+
+        res.status(result.status).json(result);
+        return;
+    }catch(error:unknown){
+        if (error instanceof Error) {
+            console.error('Error al buscar la persona', error.message);
+            res.status(500).json({ error: "Error al buscar persona" });
+            return;
+        }
+        console.error('Error desconocido al buscar la persona', error);
+        res.status(500).json({ error: "Error desconocido al buscar persona" });
+        return;
+    }
+};
+
+export const obtenerPersona = async (req: Request, res: Response):Promise<void> => {
+    try{
+        const orm = req.app.locals.orm as MikroORM;
+        const em = orm.em.fork();
+        const {valor: codVal, error:codError} = validarCodigo(req.params.id, 'Nro de persona');
         if(codError || codVal === undefined){
             res.status(400).json({ error: codError });
             return;
         };
-
-        const orm = req.app.locals.orm as MikroORM;
-        const em = orm.em.fork();
         const repo = new PersonaRepositoryORM(em);
-        const casoUso = new BuscarPersona(repo);
-
-        const persona = await casoUso.ejecutar(codVal);
-        if(!persona){
-            res.status(404).json({ message: 'No se encontró una persona con el ID proporcionado.' });
-            return;
-        };
-
-        res.status(200).json({ message: 'Persona encontrada', data:persona });
+        const casoUso = new ObtenerPersona(repo);
+        const result = await casoUso.ejecutar(codVal);
+        res.status(result.status).json(result);
         return;
     }catch(error:unknown){
         if (error instanceof Error) {
-            console.error('Error al crear la persona', error.message);
-            res.status(500).json({ error: "Error al crear persona" });
+            console.error('Error al buscar la persona', error.message);
+            res.status(500).json({ error: "Error al buscar persona" });
             return;
         }
-        console.error('Error desconocido al crear la persona', error);
-        res.status(500).json({ error: "Error desconocido al crear persona" });
+        console.error('Error desconocido al buscar la persona', error);
+        res.status(500).json({ error: "Error desconocido al buscar persona" });
         return;
     }
 };

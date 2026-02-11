@@ -3,6 +3,7 @@ import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Actividad } from "../actividad";
 
 interface EditarActividadDTO {
+    nombre?: string;
     descripcion?: string;
     precioActual?: number;
 }
@@ -16,6 +17,7 @@ export class EditarActividad {
         };
 
         // 2. Actualizar campos si vienen
+        if (dto.nombre) actividad.nombre = dto.nombre;
         if (dto.descripcion) actividad.descripcion = dto.descripcion;
         
         // Validar precio positivo

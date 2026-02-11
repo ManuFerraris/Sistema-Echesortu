@@ -53,3 +53,11 @@ export interface DashboardStats {
     totalSociosActivos: number;
     actividadMasPopular: { nombre: string; cantidad: number } | null;
 }
+
+export interface Persona {
+    nro?: number; // Lo cambiamos a number porque en backend suele ser INT
+    id?: number;  // ID también suele ser número
+    nombre: string;
+    apellido: string;
+    dni_cuit: string;
+}

@@ -31,4 +31,16 @@ export class PersonaRepositoryORM implements PersonaRepository {
     async guardar(persona:Persona):Promise<void>{
         await this.em.persist(persona).flush();
     };
+
+    async buscarPorDescParcial(termino:string):Promise<Persona[]>{
+        return await this.em.find(Persona, {
+            $or: [
+                { nombre: { $like: `%${termino}%` } },
+                { apellido: { $like: `%${termino}%` } },
+                { dni_cuit: { $like: `%${termino}%` } }
+            ]
+        }, {
+            limit: 10 // Solo traemos los primeros 10 para no saturar
+        });
+    };
 };

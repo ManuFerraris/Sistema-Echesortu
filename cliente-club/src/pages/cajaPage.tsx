@@ -3,8 +3,9 @@ import { api } from '../api/axios';
 import { AxiosError } from 'axios';
 import { API_ROUTES } from '../api/routes';
 import { Search, UserCheck, CreditCard, X, CheckCircle, AlertTriangle } from 'lucide-react';
-import type { ApiResponse, EstadoCuenta, CuotaResumen, ComprobantePago } from '../types';
+import type { ApiResponse, EstadoCuenta, CuotaResumen, ComprobantePago, Persona } from '../types';
 import { ModalInscripcion } from '../api/components/modalInscripcion';
+import { ModalSeleccionSocio } from '../api/components/modalSeleccionSocio';
 
 function CajaPage() {
     const [idBusqueda, setIdBusqueda] = useState('');
@@ -12,6 +13,8 @@ function CajaPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [mostrarInscripcion, setMostrarInscripcion] = useState(false);
+    const [resultadosBusqueda, setResultadosBusqueda] = useState<Persona[]>([]);
+    const [mostrarModalSeleccion, setMostrarModalSeleccion] = useState(false);
     
     // FILTROS
     const [soloDeudas, setSoloDeudas] = useState(false);
@@ -30,16 +33,40 @@ function CajaPage() {
         setLoading(true);
         setError('');
         setDatos(null);
+        setResultadosBusqueda([]);
+        setMostrarModalSeleccion(false);
+
+        const esNumero = !isNaN(Number(idBusqueda));
 
         try {
-            const res = await api.get<ApiResponse<EstadoCuenta>>(API_ROUTES.personas.estadoCuenta(idBusqueda));
-
+            if (esNumero) {
+            // Lógica antigua: Búsqueda directa por ID para obtener Cuenta Corriente
+            const res = await api.get(API_ROUTES.personas.estadoCuenta(Number(idBusqueda)));
             if (res.data.success) {
-            setDatos(res.data.data);
-            } else {
-            setError(res.data.messages[0] || 'Error al buscar socio');
+                setDatos(res.data.data);
             }
+            } else {
+                // Lógica nueva: Búsqueda por Texto
+                const res = await api.get(API_ROUTES.personas.search(idBusqueda));
+                
+                if (res.data.success) {
+                    const encontrados = res.data.data;
 
+                    if (encontrados.length === 0) {
+                        alert('No se encontraron socios con ese nombre.');
+                    } else if (encontrados.length === 1) {
+                        // Si solo hay uno, cargamos su cuenta corriente directo
+                        const unico = encontrados[0];
+                        // Truco UX: Actualizamos el input con el ID real
+                        setIdBusqueda(unico.nro || unico.id);
+                        const cuentaRes = await api.get(API_ROUTES.personas.estadoCuenta(unico.nro || unico.id));
+                        setDatos(cuentaRes.data.data);
+                    } else {
+                        setResultadosBusqueda(encontrados);
+                        setMostrarModalSeleccion(true);
+                    }
+                }
+            }
         } catch (error) {
             console.error(error);
             const err = error as AxiosError<ApiResponse<null>>;
@@ -49,6 +76,28 @@ function CajaPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 3. Función callback cuando eligen alguien del modal
+    const handleSeleccionarSocio = (socio: Persona) => {
+        setMostrarModalSeleccion(false);
+        setIdBusqueda(String(socio.nro));
+        
+        // Disparamos la búsqueda de cuenta corriente manualmente
+        setLoading(true);
+        if (!socio.nro) {
+            alert('Error: El socio seleccionado no tiene un número de socio válido.');
+            setLoading(false);
+            return;
+        };
+        api.get(API_ROUTES.personas.estadoCuenta(socio.nro))
+        .then(res => {
+            if(res.data.success) setDatos(res.data.data);
+        })
+        .catch(() => {
+            alert('Error al cargar la cuenta corriente del socio seleccionado.');
+        })
+        .finally(() => setLoading(false));
     };
 
     const abrirModalPago = (cuota: CuotaResumen) => {
@@ -100,8 +149,8 @@ function CajaPage() {
         {/* BUSCADOR */}
         <form onSubmit={buscarSocio} style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
             <input 
-            type="number"
-            placeholder="Ingrese Nro de Socio (ej: 1)" 
+            type="text"
+            placeholder="Ingrese Id, Nombre o Apellido..." 
             value={idBusqueda}
             onChange={(e) => setIdBusqueda(e.target.value)}
             style={{ padding: '12px', flex: 1, fontSize: '16px', border: '1px solid #ccc', borderRadius: '5px' }}
@@ -276,6 +325,7 @@ function CajaPage() {
                             <option value="debito">💳 Tarjeta Débito</option>
                             <option value="credito">💳 Tarjeta Crédito</option>
                             <option value="mercadopago">📲 Mercado Pago</option>
+                            <option value="otro">🔖 Otro</option>
                         </select>
                     </div>
 
@@ -304,6 +354,14 @@ function CajaPage() {
                 </div>
             </div>
             </div>
+        )}
+        {/* MODAL DE DESAMBIGUACIÓN */}
+        {mostrarModalSeleccion && (
+            <ModalSeleccionSocio 
+                resultados={resultadosBusqueda}
+                onClose={() => setMostrarModalSeleccion(false)}
+                onSelect={handleSeleccionarSocio}
+            />
         )}
         </div>
     );

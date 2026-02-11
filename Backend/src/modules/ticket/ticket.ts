@@ -5,6 +5,8 @@ export enum MedioPago {
     EFECTIVO = 'efectivo',
     TRANSFERENCIA = 'transferencia',
     MERCADOPAGO = 'mercadopago',
+    DEBITO = 'debito',
+    CREDITO = 'credito',
     OTRO = 'otro'
 }
 

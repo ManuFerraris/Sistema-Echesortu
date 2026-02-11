@@ -5,15 +5,17 @@ import { getPersonas,
     actualizarPersona,
     darDeBajaPersona,
     reactivarPersonaController,
-    getEstadoCuenta
+    getEstadoCuenta,
+    obtenerPersona
 } from "./persona.controller";
 
 export const personaRouter = Router();
 
 personaRouter.get("/", getPersonas);
-personaRouter.get("/:nro", getPersona);
+personaRouter.get('/buscar', getPersona);
 personaRouter.post("/", crearPersona);
 personaRouter.put("/:nro", actualizarPersona);
 personaRouter.delete("/:nro", darDeBajaPersona);
 personaRouter.patch('/:nro/activar', reactivarPersonaController);
 personaRouter.get("/:nro/estado-cuenta", getEstadoCuenta);
+personaRouter.get('/:id', obtenerPersona);

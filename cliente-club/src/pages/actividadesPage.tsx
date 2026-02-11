@@ -11,16 +11,16 @@ export function ActividadesPage() {
     const [/*error*/, setError] = useState<string | null>(null);
     
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [editForm, setEditForm] = useState({ descripcion: '', precioActual: 0 });
+    const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precioActual: 0 });
 
     const fetchActividades = async () => {
         try {
-        const res = await api.get<ApiResponse<Actividad[]>>(API_ROUTES.actividades.list);
-        if (res.data.success) setActividades(res.data.data);
+            const res = await api.get<ApiResponse<Actividad[]>>(API_ROUTES.actividades.list);
+            if (res.data.success) setActividades(res.data.data);
         } catch (error) {
-        console.error(error);
+            console.error(error);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -30,7 +30,7 @@ export function ActividadesPage() {
 
     const startEdit = (act: Actividad) => {
         setEditingId(act.numero);
-        setEditForm({ descripcion: act.descripcion, precioActual: act.precioActual });
+        setEditForm({ nombre: act.nombre, descripcion: act.descripcion, precioActual: act.precioActual });
     };
 
     const cancelEdit = () => {
@@ -83,7 +83,15 @@ export function ActividadesPage() {
                                 {/* MODO LECTURA vs MODO EDICIÓN */}
                                 {editingId === act.numero ? (
                                     <>
-                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>{act.nombre || 'Sin nombre'}</td> {/* Nombre no editable usualmente */}
+                                        <td style={{ padding: '15px' }}>
+                                            <input 
+                                                type="text" 
+                                                value={editForm.nombre}
+                                                onChange={e => setEditForm({...editForm, nombre: e.target.value})}
+                                                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', width: '100%' }}
+                                            />
+                                        </td>
+                                        
                                         <td style={{ padding: '15px' }}>
                                             <input 
                                                 type="text" 

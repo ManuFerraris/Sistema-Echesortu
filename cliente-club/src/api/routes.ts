@@ -12,6 +12,7 @@ export const API_ROUTES = {
         // Tu ruta específica
         estadoCuenta: (id: number | string) => `/api/personas/${id}/estado-cuenta`,
         activar: (id: number | string) => `/api/personas/${id}/activar`,
+        search: (term: string) => `/api/personas/buscar?q=${term}`,
     },
     pagos: {
         create: '/api/pagos',
