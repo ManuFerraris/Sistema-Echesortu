@@ -4,7 +4,7 @@ import { Usuario } from "../../usuarios/usuario";
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'MI_CLAVE_SUPER_SECRETA_DEL_CLUB_123';
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_fallback_insegura';
 
 export class LoginUsuario {
     async ejecutar(dto: { usuario: string, password: string }, em: EntityManager): Promise<ServiceResponse<{ token: string, usuario: string }>> {

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { MikroORM } from '@mikro-orm/core';
+import { validarCodigo } from '../../utils/validarCodigo';
 import { CrearActividad } from '../application/crearActividad';
+import { EditarActividad } from '../application/actualizarActividad';
 
 export const crearActividad = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -46,4 +48,32 @@ export const listarActividades = async (req: Request, res: Response) => {
         });
         return;
     }
+};
+
+export const editarActividad = async (req: Request, res: Response) => {
+    try {
+        const orm = req.app.locals.orm as MikroORM;
+        const em = orm.em.fork();
+
+        const {error, valor: codVal} = validarCodigo(req.params.id, "Número de actividad");
+        if(error || codVal === undefined){
+            res.status(400).json({success: false, 
+                messages: [error || "Error al validar el código"],
+            });
+            return;
+        };
+        
+        const useCase = new EditarActividad();
+        const result = await useCase.ejecutar(codVal, req.body, em);
+
+        res.status(result.status).json(result);
+        return;
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Error desconocido";
+        res.status(500).json({
+            success: false,
+            messages: ["Error al editar actividad", msg]
+        });
+        return;
+    };
 };

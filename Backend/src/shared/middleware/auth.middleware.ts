@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { userContext } from '../../modules/utils/userContext';
 
-const JWT_SECRET = 'MI_CLAVE_SUPER_SECRETA_DEL_CLUB_123';
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_fallback_insegura';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     // 1. Obtener el header "Authorization: Bearer <token>"
@@ -26,6 +26,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         userContext.run(decoded.username, () => {
             // Guardamos datos en req para usarlos en los controllers si hace falta
             (req as any).user = decoded; 
+            // AUDITORÍA SIMPLE EN CONSOLA
+            console.log(`[AUDIT] User: ${decoded.username} | Action: ${req.method} ${req.path} | IP: ${req.ip}`);
             next();
         });
 
