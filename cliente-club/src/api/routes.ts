@@ -22,8 +22,12 @@ export const API_ROUTES = {
     },
     actividades: {
         list: '/api/actividades',
+        update: (id: number) => `/api/actividades/${id}`
     },
     inscripciones: {
         create: '/api/inscripciones',
+    },
+    dashboard: {
+        stats: '/api/dashboard/stats'
     }
 } as const;

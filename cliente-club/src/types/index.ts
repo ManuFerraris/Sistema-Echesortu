@@ -44,3 +44,12 @@ export interface Actividad {
     descripcion: string; 
     precioActual: number;
 }
+
+export interface DashboardStats {
+    mes: number;
+    anio: number;
+    recaudacionTotal: number;
+    porcentajeMorosidad: number;
+    totalSociosActivos: number;
+    actividadMasPopular: { nombre: string; cantidad: number } | null;
+}

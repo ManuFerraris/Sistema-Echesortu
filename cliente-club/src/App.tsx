@@ -6,6 +6,8 @@ import CajaPage from './pages/cajaPage';
 import { NuevoSocioPage } from './pages/nuevoSocioPage';
 import { LoginPage } from './pages/loginPage';
 import { ProcesosPage } from './pages/procesosPage';
+import { DashboardPage } from './pages/dashboardPage';
+import { ActividadesPage } from './pages/actividadesPage';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
             <Route path="/" element={<CajaPage />} />
             <Route path="/nuevo-socio" element={<NuevoSocioPage />} />
             <Route path="/procesos" element={<ProcesosPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/actividades" element={<ActividadesPage />} />
           </Route>
 
           {/* CATCH ALL: Si entra a cualquier ruta desconocida, mandar a Home (o Login si no tiene sesión) */}
