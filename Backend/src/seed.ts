@@ -1,15 +1,15 @@
 import { MikroORM } from "@mikro-orm/core";
 import config from "./shared/db/mikro-orm.config";
-import { Persona } from "./modules/auditoria/persona";
-import { Actividad } from "./modules/auditoria/actividad";
+import { Persona } from "./modules/personas/persona";
+import { Actividad } from "./modules/actividad/actividad";
 import { Inscripcion } from "./modules/inscripcion/inscripcion";
-import { Cuota, EstadoCuota } from "./modules/auditoria/cuota";
+import { Cuota, EstadoCuota } from "./modules/coutas/cuota";
 import { Ticket, MedioPago } from "./modules/ticket/ticket";
 
 async function main() {
     // 1. Conectar
     const orm = await MikroORM.init(config);
-    const em = orm.em.fork(); // Entity Manager
+    const em = orm.em.fork();
 
     // 2. Crear una Actividad
     const natacion = new Actividad();

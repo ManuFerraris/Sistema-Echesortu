@@ -71,6 +71,7 @@ export class RegistrarPago {
             // Asumiendo que tu entidad Socio tiene nombre y apellido
             nombreSocio: nombreSocio, 
             nroSocio: cuota.inscripcion.persona.nro,
+            emailSocio: cuota.inscripcion.persona.email,
             total: montoTotalAPagar,
             items: dto.pagos.map(p => ({
                 mes: `Cuota ${cuota.mes}/${cuota.anio}`,

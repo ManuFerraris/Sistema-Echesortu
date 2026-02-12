@@ -8,7 +8,7 @@ async function bootstrap() {
 
         // 1. Iniciar Base de Datos
         const orm = await initORM();
-        console.log("Base de datos conectada");
+        console.log("Base de datos conectada!");
 
         // 2. Inyectar ORM en Express (Igual que en la Peluquería)
         app.locals.orm = orm;

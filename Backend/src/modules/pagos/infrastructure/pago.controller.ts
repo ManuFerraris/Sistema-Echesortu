@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { MikroORM } from '@mikro-orm/core';
 import { RegistrarPago } from '../application/registrarPago';
 import { generarReciboPDF } from '../../../shared/services/pdf.service';
+import { enviarReciboPorEmail } from '../../../shared/services/email.service';
 
 export const registrarPago = async (req: Request, res: Response) => {
     try {
@@ -22,12 +23,25 @@ export const registrarPago = async (req: Request, res: Response) => {
         };
 
         // SI ES ÉXITO: Generamos y enviamos el PDF
-        // Headers para PDF
+        const pdfBuffer = await generarReciboPDF(resultado.data);
+
+        const emailSocio = resultado.data.emailSocio;
+        
+        if (emailSocio) {
+            enviarReciboPorEmail(
+                emailSocio, 
+                resultado.data.nombreSocio, 
+                pdfBuffer, 
+                resultado.data.nroComprobante
+            ).then(() => console.log("Email enviado en segundo plano"));
+        }
+
+        // 3. Respondemos al Frontend con el mismo buffer
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename=recibo-${resultado.data.nroComprobante}.pdf`);
+        res.setHeader('Content-Length', pdfBuffer.length);
         
-        // Stream directo al cliente
-        generarReciboPDF(resultado.data, res);
+        res.send(pdfBuffer);
         return;
 
     } catch (error: unknown) {

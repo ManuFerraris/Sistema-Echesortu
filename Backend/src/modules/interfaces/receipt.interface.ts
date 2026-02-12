@@ -7,6 +7,7 @@ export interface ReceiptItem {
 
 export interface ReceiptData {
     nroComprobante: string;
+    emailSocio: string;
     fecha: Date;
     nombreSocio: string;
     nroSocio: number;
