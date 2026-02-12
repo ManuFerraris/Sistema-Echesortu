@@ -70,17 +70,52 @@ export const generarReciboPDF = (data: ReceiptData):Promise<Buffer> => {
                 position += 20;
             });
 
-            generateHr(doc, position);
-
             // --- TOTAL ---
-            const totalPosition = position + 10;
+            const totalPosition = position + 30;
+            // 1. Línea separadora fina
+            generateHr(doc, totalPosition - 10);
+            // 2. Fondo Gris Suave para el bloque de totales (x, y, ancho, alto)
+            // Esto le da un toque muy "Pro"
             doc
-                .fontSize(12)
-                .font('Helvetica-Bold')
-                .text('TOTAL:', 300, totalPosition)
-                .text(`$${data.total}`, 400, totalPosition);
-            doc.end();
+                .fillColor('#f4f4f4')
+                .rect(280, totalPosition - 5, 270, 50) 
+                .fill();
 
+            // Volvemos a color negro para el texto
+            doc.fillColor('#000000');
+
+            // Definimos columnas alineadas
+            // Usamos 'width' y 'align: right' para que los números queden encolumnados perfectos
+            const labelX = 290;
+            const valueX = 420;
+            const colWidth = 120; // Ancho de la columna invisible para alinear
+
+            // A. TOTAL PAGADO (Grande y destacado)
+            doc
+                .font('Helvetica-Bold')
+                .fontSize(14)
+                .text('TOTAL PAGADO:', labelX, totalPosition, { width: colWidth, align: 'right' })
+                .text(`$ ${data.total}`, valueX, totalPosition, { width: colWidth, align: 'right' });
+
+            // B. SALDO RESTANTE (Más chico, abajo)
+            // Lógica visual: Si debe plata (>0), lo ponemos en Rojo. Si está en 0, en Verde o Gris.
+            const colorRestante = Number(data.restanPagar) > 0 ? '#cc0000' : '#2e7d32'; // Rojo vs Verde oscuro
+            
+            doc
+                .fillColor(colorRestante)
+                .fontSize(10) // Un poco más chico que el total
+                .font('Helvetica-Bold')
+                .text('Saldo Restante:', labelX, totalPosition + 22, { width: colWidth, align: 'right' })
+                .text(`$ ${data.restanPagar}`, valueX, totalPosition + 22, { width: colWidth, align: 'right' });
+
+            // C. Firma (Opcional, un detalle lindo al final)
+            doc
+                .fillColor('#000000')
+                .fontSize(8)
+                .font('Helvetica')
+                .text('Recibido por: Administración', 50, totalPosition + 25);
+
+            doc.end();
         }catch(error: unknown) {
             const msg = error instanceof Error ? error.message : "Error desconocido";
             console.error("CRASH en generarReciboPDF:", msg);

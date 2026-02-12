@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, ManyToOne, Enum } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, ManyToOne, Enum, Rel } from "@mikro-orm/core";
 import { Cuota } from "../coutas/cuota";
+import { Caja } from "../caja/caja";
 
 export enum MedioPago {
     EFECTIVO = 'efectivo',
@@ -32,4 +33,7 @@ export class Ticket {
 
     @Property({ default: false })
     anulado: boolean = false;
+
+    @ManyToOne(() => Caja, { nullable: true })
+    caja?: Rel<Caja>;
 }

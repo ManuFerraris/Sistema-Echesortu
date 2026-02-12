@@ -14,6 +14,8 @@ import { ticketRouter } from "./modules/ticket/infrastructure/ticket.routes";
 import { inscripcionRouter } from "./modules/inscripcion/infrastructure/inscripcion.routes";
 import { actividadRouter } from "./modules/actividad/infrastructure/actividad.routes";
 import { dashboardRouter } from "./modules/dashboard/infrastructure/dashboard.routes";
+import { cajaRouter } from "./modules/caja/infrastructure/caja.routes";
+
 export const app = express();
 
 // HELMET: Protege cabeceras HTTP
@@ -75,6 +77,7 @@ app.use("/api/tickets", ticketRouter);
 app.use("/api/inscripciones", inscripcionRouter);
 app.use("/api/actividades", actividadRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/caja", cajaRouter);
 
 app.use((_, res) => {
     res.status(404).json({ message: "Ruta no encontrada" });

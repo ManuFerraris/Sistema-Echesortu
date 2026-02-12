@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { Collection, Entity, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
+import { Caja } from "../caja/caja";
 
 @Entity()
 export class Usuario {
@@ -13,4 +14,7 @@ export class Usuario {
 
     @Property({ nullable: true })
     rol?: string;
+
+    @OneToMany(() => Caja, caja => caja.usuario)
+    cajas = new Collection<Caja>(this);
 }
