@@ -7,6 +7,7 @@ import { GestionCobros } from './components/gestionCobros';
 import { CierreCajaModal } from './components/cierreCajaModal';
 import { ResumenSesion } from './components/resumenSesion';
 import { LogOut } from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
 
 export function CajaPage() {
     const [caja, setCaja] = useState<Caja | null>(null);
@@ -57,9 +58,9 @@ export function CajaPage() {
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                     {/* Botón para ver dashboard/resumen rápido (Opcional) */}
-                    {/* <button style={{ background: '#334155', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', display: 'flex', gap: '5px', alignItems: 'center' }}>
+                    <button style={{ background: '#334155', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', display: 'flex', gap: '5px', alignItems: 'center' }}>
                         <LayoutDashboard size={16} /> Resumen
-                    </button> */}
+                    </button>
 
                     <button 
                         onClick={() => setMostrarCierre(true)}

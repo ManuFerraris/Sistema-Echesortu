@@ -39,6 +39,19 @@ export function CierreCajaModal({ onClose, onSuccess }: Props) {
                 observaciones: obs
             });
             alert(res.data.messages[0]); // Mensaje del back (si hubo faltante/sobrante)
+            // 2. Extraemos el ID de la caja que acabamos de cerrar
+            const cajaCerradaId = res.data.data.id;
+
+            // 3. Abrimos el PDF del Arqueo en una nueva pestaña (Igual que los cobros)
+            const reporteRes = await api.get(API_ROUTES.caja.reporteCierre(cajaCerradaId), {
+                responseType: 'blob'
+            });
+            
+            const pdfBlob = new Blob([reporteRes.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            window.open(url, '_blank');
+
+            // 4. Cerramos el modal
             onSuccess();
         } catch (error) {
             const err = error as AxiosError<{ messages: string[] }>;

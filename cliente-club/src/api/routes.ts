@@ -36,5 +36,6 @@ export const API_ROUTES = {
         cerrar: '/api/caja/cerrar',
         estado: '/api/caja/estado',
         resumen: '/api/caja/resumen',
+        reporteCierre: (id: string) => `/api/caja/${id}/reporte-cierre`,
     }
 } as const;

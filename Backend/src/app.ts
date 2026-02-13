@@ -65,7 +65,7 @@ app.use("/api/auth", authRouter);
 // ==========================
 // ZONA DE CONTROL (El Peaje)
 // ==========================
-app.use('/api', authMiddleware);
+//app.use('/api', authMiddleware);
 
 // ========================
 // ZONA PRIVADA (Protegida)
