@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/axios';
+import { AxiosError } from 'axios';
 import { Save, ArrowLeft, UserPlus } from 'lucide-react';
 import { API_ROUTES } from '../api/routes';
 
@@ -29,18 +30,25 @@ export function NuevoSocioPage() {
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        console.log('[DEBUG 1] Enviando formulario con datos:', formData);
         e.preventDefault();
         setLoading(true);
 
         try {
-            await api.post(API_ROUTES.personas.create, formData);
+            const response = await api.post(API_ROUTES.personas.create, formData);
+            console.log('[DEBUG 2] Respuesta del servidor:', response);
             alert('¡Socio creado exitosamente!');
             // Redirigir a la Caja para buscarlo
             navigate('/'); 
         } catch (error) {
-            console.error(error);
-            alert('Error al crear el socio. Revisa que el DNI no esté duplicado.');
+            if (error instanceof AxiosError) {
+                console.error('[DEBUG 3] Error de Axios:', error.response);
+                const msg = error.response?.data?.messages?.[0] || 'Error al crear el socio.';
+                alert(msg);
+            }else{
+                alert('Error al crear el socio. Revisa que el DNI no esté duplicado.');
+            }
         } finally {
             setLoading(false);
         }

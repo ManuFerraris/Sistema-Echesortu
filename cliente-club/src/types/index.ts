@@ -61,3 +61,26 @@ export interface Persona {
     apellido: string;
     dni_cuit: string;
 }
+
+export interface Caja {
+    id: number;
+    numero: number;
+    saldoInicial: number;
+    saldoFinal: number;
+    diferencia: number;
+    fechaApertura: string;
+    fechaCierre?: string;
+    estado: 'abierta' | 'cerrada';
+    observaciones?: string;
+}
+
+export interface ResumenCaja {
+    cajaId: number;
+    fechaApertura: string;
+    saldoInicial: number;
+    totalEfectivo: number;
+    totalTransferencia: number; // Incluye MP, Tarjetas, etc.
+    totalOtros: number;
+    cantidadTickets: number;
+    saldoSistema: number; // El total teórico
+}

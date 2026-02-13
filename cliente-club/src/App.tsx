@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/authContext';
 import { ProtectedRoute } from './api/components/protectedRoute';
 
-import CajaPage from './pages/cajaPage';
+import CajaPage from './pages/caja/cajaPage';
 import { NuevoSocioPage } from './pages/nuevoSocioPage';
 import { LoginPage } from './pages/loginPage';
 import { ProcesosPage } from './pages/procesosPage';

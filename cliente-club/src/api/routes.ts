@@ -30,5 +30,11 @@ export const API_ROUTES = {
     },
     dashboard: {
         stats: '/api/dashboard/stats'
+    },
+    caja: {
+        abrir: '/api/caja/abrir',
+        cerrar: '/api/caja/cerrar',
+        estado: '/api/caja/estado',
+        resumen: '/api/caja/resumen',
     }
 } as const;
