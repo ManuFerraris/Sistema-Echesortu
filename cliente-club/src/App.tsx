@@ -8,6 +8,8 @@ import { LoginPage } from './pages/loginPage';
 import { ProcesosPage } from './pages/procesosPage';
 import { DashboardPage } from './pages/dashboardPage';
 import { ActividadesPage } from './pages/actividadesPage';
+import { EditarSocioPage } from './pages/editarSocioPage';
+import { SociosPage } from './pages/socios/sociosPage';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
             <Route path="/procesos" element={<ProcesosPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/actividades" element={<ActividadesPage />} />
+            <Route path="/socios" element={<SociosPage />} />
+            <Route path="/socios/editar/:id" element={<EditarSocioPage />} />
           </Route>
 
           {/* CATCH ALL: Si entra a cualquier ruta desconocida, mandar a Home (o Login si no tiene sesión) */}

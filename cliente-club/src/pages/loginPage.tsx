@@ -22,6 +22,7 @@ export function LoginPage() {
 
         try {
             await login(usuario, password);
+            console.log("Login exitoso, redirigiendo...");
             navigate('/'); // Redirigir al Home/Caja si sale bien
         } catch (error) {
             console.error(error);

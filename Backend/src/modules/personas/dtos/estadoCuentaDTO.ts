@@ -20,9 +20,12 @@ export interface DetalleActividadDTO {
 // Define la respuesta FINAL completa
 export interface EstadoCuentaDTO {
     cliente: {
+        id: number;
         nombre: string;
         apellido: string;
         dni: string;
+        fotoUrl?: string;
+        estado: boolean;
     };
     resumenFinanciero: {
         totalDeudaClub: number;

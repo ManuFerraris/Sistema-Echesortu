@@ -7,7 +7,7 @@ export function Navbar() {
     
     const handleLogout = () => {
         if (confirm('¿Seguro que deseas cerrar sesión?')) {
-            logout(); // Esto borra token, usuario y redirige a /login
+            logout();
         }
     };
 
@@ -17,7 +17,7 @@ export function Navbar() {
             padding: '1rem 2rem', 
             marginBottom: '2rem',
             display: 'flex',
-            justifyContent: 'space-between', // Separa menú izquierda de usuario derecha
+            justifyContent: 'space-between',
             alignItems: 'center',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
         }}>
@@ -38,6 +38,9 @@ export function Navbar() {
                 </Link>
                 <Link to="/actividades" style={linkStyle}>
                     <List size={20} /> Servicios
+                </Link>
+                <Link to ="/socios" style={linkStyle}>
+                    <User size={20} /> Socios
                 </Link>
             </div>
 

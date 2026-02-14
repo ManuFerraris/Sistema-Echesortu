@@ -55,19 +55,19 @@ export function AperturaCaja({ onCajaAbierta }: Props) {
                                 onChange={e => setMonto(e.target.value)} 
                                 placeholder="0.00"
                                 required
-                                style={{ width: '100%', padding: '10px 10px 10px 35px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '1.1rem' }}
+                                style={{ width: '91%', padding: '10px 10px 10px 35px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '1.1rem' }}
                             />
                         </div>
                     </div>
 
                     <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Observaciones</label>
+                        <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Observaciones</label>
                         <input 
                             type="text" 
                             value={obs} 
                             onChange={e => setObs(e.target.value)} 
                             placeholder="Ej: Turno mañana - Admin"
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+                            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '1rem' }}
                         />
                     </div>
 

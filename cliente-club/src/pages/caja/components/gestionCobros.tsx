@@ -12,7 +12,11 @@ import { ResumenSocio } from '../components/resumenSocio';
 import { ListaDeudas } from '../components/listaDeudas';
 import { ModalCobro } from '../components/modalCobro';
 
-export function GestionCobros() {
+interface Props {
+    onCobroRealizado?: () => void;
+};
+
+export function GestionCobros({ onCobroRealizado }: Props) {
     // Estado de Búsqueda
     const [idBusqueda, setIdBusqueda] = useState('');
     const [loading, setLoading] = useState(false);
@@ -81,7 +85,7 @@ export function GestionCobros() {
 
     return (
         <div style={{ padding: '2rem', maxWidth: '1600px', margin: '0 auto' }}>
-            <h1>🏊‍♂️ Gestión de Caja</h1>
+            <h1 style={{ marginBottom: '1rem', color: '#0f172a' }}>Gestión de Caja</h1>
 
             {/* BUSCADOR */}
             <form onSubmit={buscarSocio} style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
@@ -109,6 +113,7 @@ export function GestionCobros() {
                     <ResumenSocio 
                         datos={datos} 
                         onNuevaInscripcion={() => setMostrarInscripcion(true)} 
+                        onFotoActualizada={() => buscarSocio()}
                     />
 
                     <ListaDeudas 
@@ -135,6 +140,7 @@ export function GestionCobros() {
                     onSuccess={() => {
                         setCuotaAPagar(null);
                         buscarSocio(); // Recargar datos tras pago exitoso
+                        onCobroRealizado?.();
                     }} 
                 />
             )}

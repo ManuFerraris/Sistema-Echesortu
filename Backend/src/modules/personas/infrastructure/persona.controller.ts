@@ -10,6 +10,8 @@ import { DarDeBajaPersona } from "../application/eliminarPersona";
 import { ReactivarPersona } from "../application/reactivarPersona";
 import { ObtenerEstadoCuenta } from "../application/obtenerEstadoCuenta";
 import { ObtenerPersona } from "../application/obtenerPersona";
+import { ActualizarFotoPersona } from "../application/actualizarFotoPersona";
+import { EliminarPersonaDefinitivo } from "../application/eliminarPersonaDefinitivo";
 
 export const getPersonas = async (req: Request, res: Response):Promise<void> => {
     try{
@@ -18,13 +20,9 @@ export const getPersonas = async (req: Request, res: Response):Promise<void> => 
         const repo = new PersonaRepositoryORM(em);
         const casoUso = new BuscarPersonas(repo);
         
-        const personas = await casoUso.ejecutar();
-        if(personas.length === 0){
-            res.status(200).json({ message: 'No se encontraron personas registradas.' });
-            return;
-        };
+        const result = await casoUso.ejecutar();
 
-        res.status(200).json({ message: 'Personas encontradas', data:personas });
+        res.status(result.status).json(result);
         return;
         
     }catch(error:unknown){
@@ -69,14 +67,20 @@ export const obtenerPersona = async (req: Request, res: Response):Promise<void> 
     try{
         const orm = req.app.locals.orm as MikroORM;
         const em = orm.em.fork();
+
+        console.log('[DEBUG] ID recibido para obtener persona:', req.params.id); 
         const {valor: codVal, error:codError} = validarCodigo(req.params.id, 'Nro de persona');
         if(codError || codVal === undefined){
             res.status(400).json({ error: codError });
             return;
         };
+
+        console.log('[DEBUG] ID validado para obtener persona:', codVal);
+
         const repo = new PersonaRepositoryORM(em);
         const casoUso = new ObtenerPersona(repo);
         const result = await casoUso.ejecutar(codVal);
+        console.log('[DEBUG] Resultado de obtener persona:', result);
         res.status(result.status).json(result);
         return;
     }catch(error:unknown){
@@ -93,13 +97,20 @@ export const obtenerPersona = async (req: Request, res: Response):Promise<void> 
 
 export const crearPersona = async (req: Request, res: Response):Promise<void> => {
     try{
+        console.log("--- DEBUG FOTO ---");
+        console.log("Body recibido:", req.body);
+        console.log("Archivo recibido (req.file):", req.file);
+        console.log("------------------");
+
         const orm = req.app.locals.orm as MikroORM;
         const em = orm.em.fork();
         const repo = new PersonaRepositoryORM(em);
         const casoUso = new CrearPersona(repo);
 
         const dto = req.body;
-        const resultado = await casoUso.ejecutar(dto, em);
+        const fotoUrl = req.file ? req.file.path : undefined;
+
+        const resultado = await casoUso.ejecutar({...dto, fotoUrl}, em);
 
         res.status(resultado.status).json({ 
             success: resultado.success,
@@ -121,6 +132,36 @@ export const crearPersona = async (req: Request, res: Response):Promise<void> =>
     };
 };
 
+export const actualizarFoto = async (req: Request, res: Response):Promise<void> => {
+    try {
+        const em = (req.app.locals.orm as MikroORM).em.fork();
+        const personaId = Number(req.params.id);
+
+        if (!personaId || isNaN(personaId)) {
+            res.status(400).json({ success: false, messages: ["ID de persona inválido"] });
+            return;
+        };
+
+        const fotoUrl = req.file?.path; 
+
+        if (!fotoUrl) {
+            res.status(400).json({ success: false, messages: ["No se subió ninguna imagen o el formato es incorrecto"] });
+            return;
+        };
+
+        const useCase = new ActualizarFotoPersona();
+        const resultado = await useCase.ejecutar(personaId, fotoUrl, em);
+
+        res.status(resultado.status).json(resultado);
+    } catch (error: any) {
+        console.error("Error al actualizar la foto:", error);
+        res.status(500).json({ 
+            success: false, 
+            messages: ["Error interno al procesar la imagen", error.message] 
+        });
+    }
+}
+
 export const actualizarPersona = async (req: Request, res: Response):Promise<void> => {
     try{
         const {valor: codVal, error:codError} = validarCodigo(req.params.nro, 'Nro de persona');
@@ -135,6 +176,8 @@ export const actualizarPersona = async (req: Request, res: Response):Promise<voi
         const casoUso = new ActualizarPersona(repo);
 
         const dto = req.body;
+        const fotoUrl = req.file ? req.file.path : undefined;
+        if(fotoUrl) dto.fotoUrl = fotoUrl;
         const resultado = await casoUso.ejecutar(dto, em, codVal);
 
         res.status(resultado.status).json({ 
@@ -257,3 +300,33 @@ export const getEstadoCuenta = async (req: Request, res: Response) => {
         return;
     };
 };
+
+export const eliminarPersonaPermanente = async (req: Request, res: Response):Promise<void> => {
+    try{
+        const {valor: codVal, error:codError} = validarCodigo(req.params.nro, 'Nro de persona');
+        if(codError || codVal === undefined){
+            res.status(400).json({ error: codError });
+            return;
+        };
+        const orm = req.app.locals.orm as MikroORM;
+        const em = orm.em.fork();
+        const repo = new PersonaRepositoryORM(em);
+        const casoUso = new EliminarPersonaDefinitivo(repo);
+        const resultado = await casoUso.ejecutar(codVal);
+        res.status(resultado.status).json({ 
+            success: resultado.success,
+            messages: resultado.messages,
+            data: resultado.data || null
+        });
+        return
+    }catch(error:unknown){
+        const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+        console.error(errorMsg);
+        res.status(500).json({
+            success: false,
+            messages: ["Error interno del servidor", errorMsg],
+            data: null
+        });
+        return;
+    };
+}

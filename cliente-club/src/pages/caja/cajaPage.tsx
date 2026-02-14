@@ -13,6 +13,7 @@ export function CajaPage() {
     const [caja, setCaja] = useState<Caja | null>(null);
     const [loading, setLoading] = useState(true);
     const [mostrarCierre, setMostrarCierre] = useState(false);
+    const [updateTrigger, setUpdateTrigger] = useState(0);
 
     const checkEstado = async () => {
         setLoading(true);
@@ -24,6 +25,10 @@ export function CajaPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCobroExitoso = () => {
+        setUpdateTrigger(prev => prev + 1); // Cambiamos el valor para disparar el useEffect
     };
 
     useEffect(() => {
@@ -71,9 +76,9 @@ export function CajaPage() {
                 </div>
             </div>
 
-            <ResumenSesion />
+            <ResumenSesion triggerUpdate={updateTrigger}/>
 
-            <GestionCobros />
+            <GestionCobros onCobroRealizado={handleCobroExitoso} />
 
             {/* Modal de Cierre */}
             {mostrarCierre && (

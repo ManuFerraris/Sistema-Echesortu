@@ -45,6 +45,9 @@ export class Persona {
     @Property({ nullable: true })
     fechaReincorporacion?: Date;
 
+    @Property({ nullable: true })
+    fotoUrl?: string;
+
     @OneToMany(() => Inscripcion, inscripcion => inscripcion.persona)
     inscripciones = new Collection<Inscripcion>(this);
 }

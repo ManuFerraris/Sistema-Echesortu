@@ -25,7 +25,7 @@ export interface DetalleActividad {
 }
 
 export interface EstadoCuenta {
-    cliente: { nombre: string; apellido: string; dni: string };
+    cliente: { id: number, nombre: string; apellido: string; dni: string; fotoUrl?: string };
     resumenFinanciero: { totalDeudaClub: number; totalPagadoHistorico: number };
     detalle: DetalleActividad[];
 }
@@ -60,7 +60,28 @@ export interface Persona {
     nombre: string;
     apellido: string;
     dni_cuit: string;
+    fotoUrl?: string;
+    estado: boolean;
 }
+
+export interface GetPersonas {
+    nro: number;
+    nombre: string;
+    apellido: string;
+    tipo: "fisica" | "juridica";
+    dni_cuit: string;
+    fechaNacimiento: Date;
+    email: string;
+    telefono?: string | undefined;
+    domicilio: string;
+    fechaAlta: Date;
+    activo: boolean;
+    rol_grupo_familiar?: string | undefined;
+    fecha_ingreso_grupo?: Date | undefined;
+    fechaReincorporacion?: Date | undefined;
+    fotoUrl?: string | undefined;
+}
+
 
 export interface Caja {
     id: number;

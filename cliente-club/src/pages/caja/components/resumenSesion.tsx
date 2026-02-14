@@ -4,7 +4,11 @@ import { API_ROUTES } from '../../../api/routes';
 import type { ResumenCaja } from '../../../types';
 import { RefreshCw, TrendingUp, Wallet, CreditCard } from 'lucide-react';
 
-export function ResumenSesion() {
+interface Props {
+    triggerUpdate?: number; 
+};
+
+export function ResumenSesion({ triggerUpdate }: Props) {
     const [resumen, setResumen] = useState<ResumenCaja | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -22,7 +26,7 @@ export function ResumenSesion() {
 
     useEffect(() => {
         cargarResumen();
-    }, []);
+    }, [triggerUpdate]);
 
     if (!resumen) return null;
 

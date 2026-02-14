@@ -6,13 +6,14 @@ export const API_ROUTES = {
         list: '/api/personas',
         create: '/api/personas',
         // Función para generar la URL dinámica
-        getById: (id: number | string) => `/api/personas/${id}`,
+        getById: (id: number | string) => `/api/personas/obtenerPersona/${id}`,
         update: (id: number | string) => `/api/personas/${id}`,
         delete: (id: number | string) => `/api/personas/${id}`,
         // Tu ruta específica
         estadoCuenta: (id: number | string) => `/api/personas/${id}/estado-cuenta`,
         activar: (id: number | string) => `/api/personas/${id}/activar`,
         search: (term: string) => `/api/personas/buscar?q=${term}`,
+        updatePicture: (id: number | string) => `/api/personas/${id}/foto`,
     },
     pagos: {
         create: '/api/pagos',

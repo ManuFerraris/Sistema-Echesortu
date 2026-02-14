@@ -15,6 +15,7 @@ export interface PersonaDTO {
     rol_grupo_familiar?: string;
     fecha_ingreso_grupo?: Date | string;
     fechaReincorporacion?: Date | string;
+    fotoUrl?: string;
 }
 
 // ===========================
@@ -86,6 +87,10 @@ function validarReglasDeNegocio(dto: PersonaDTO, errores: string[]) {
         if (dto.dni_cuit.length < 7 || dto.dni_cuit.length > 11) {
             errores.push("El DNI/CUIT debe tener entre 7 y 11 caracteres (sin puntos).");
         }
+    }
+
+    if(typeof dto.activo !== 'boolean') {
+        dto.activo = true;
     }
 
     // Validar Longitudes de Strings

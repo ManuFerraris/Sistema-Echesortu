@@ -36,6 +36,7 @@ export class ActualizarPersona {
         if (dto.domicilio) persona.domicilio = dto.domicilio;
         if (dto.telefono) persona.telefono = dto.telefono;
         if (dto.tipo) persona.tipo = dto.tipo;
+        if(dto.fotoUrl) persona.fotoUrl = dto.fotoUrl;
         
         // Manejo especial para booleanos (verificar undefined, no falsy)
         if (dto.activo !== undefined) persona.activo = dto.activo;

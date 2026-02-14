@@ -73,9 +73,12 @@ export class ObtenerEstadoCuenta {
         // 5. Construimos el objeto final
         const respuesta: EstadoCuentaDTO = {
             cliente: {
+                id: persona.nro,
                 nombre: persona.nombre,
                 apellido: persona.apellido,
-                dni: persona.dni_cuit
+                dni: persona.dni_cuit,
+                fotoUrl: persona.fotoUrl || undefined,
+                estado: persona.activo
             },
             resumenFinanciero: {
                 totalDeudaClub: totalDeuda,
