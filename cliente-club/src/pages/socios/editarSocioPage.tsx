@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api } from '../api/axios';
+import { api } from '../../api/axios';
 import { ArrowLeft, Save, } from 'lucide-react';
-import { API_ROUTES } from '../api/routes';
+import { API_ROUTES } from '../../api/routes';
 import { AxiosError } from 'axios';
 
 export function EditarSocioPage() {

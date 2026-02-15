@@ -24,7 +24,8 @@ export const API_ROUTES = {
     },
     actividades: {
         list: '/api/actividades',
-        update: (id: number) => `/api/actividades/${id}`
+        create: '/api/actividades',
+        update: (id: number) => `/api/actividades/actualizar/${id}`
     },
     inscripciones: {
         create: '/api/inscripciones',

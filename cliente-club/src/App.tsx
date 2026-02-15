@@ -3,12 +3,12 @@ import { AuthProvider } from './context/authContext';
 import { ProtectedRoute } from './api/components/protectedRoute';
 
 import CajaPage from './pages/caja/cajaPage';
-import { NuevoSocioPage } from './pages/nuevoSocioPage';
+import { NuevoSocioPage } from './pages/socios/nuevoSocioPage';
 import { LoginPage } from './pages/loginPage';
 import { ProcesosPage } from './pages/procesosPage';
 import { DashboardPage } from './pages/dashboardPage';
 import { ActividadesPage } from './pages/actividadesPage';
-import { EditarSocioPage } from './pages/editarSocioPage';
+import { EditarSocioPage } from './pages/socios/editarSocioPage';
 import { SociosPage } from './pages/socios/sociosPage';
 
 function App() {

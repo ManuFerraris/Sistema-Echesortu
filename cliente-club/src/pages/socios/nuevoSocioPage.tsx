@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/axios';
+import { api } from '../../api/axios';
 import { AxiosError } from 'axios';
 import { Save, ArrowLeft, UserPlus, Upload, X } from 'lucide-react';
-import { API_ROUTES } from '../api/routes';
+import { API_ROUTES } from '../../api/routes';
 
 export function NuevoSocioPage() {
     const navigate = useNavigate();
