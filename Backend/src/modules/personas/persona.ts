@@ -7,13 +7,16 @@ export class Persona {
     nro!: number;
 
     @Property()
-    nombre!: string;
+    nombre!: string; // O razon social
 
     @Property()
-    apellido!: string;
+    apellido?: string; // Si es empresa -> apellido no es necesario
 
     @Property({ nullable: true })
     tipo: "fisica" | "juridica" = "fisica"; // Por defecto, asumimos persona física
+
+    @Property({ nullable: true })
+    socio?: boolean = false; // Por defecto, no es socio, es solo una persona
 
     @Property({ unique: true })
     dni_cuit!: string;

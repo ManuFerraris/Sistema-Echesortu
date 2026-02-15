@@ -3,7 +3,6 @@ import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Cuota, EstadoCuota } from "../cuota";
 import { EstadoInscripcion, Inscripcion } from "../../inscripcion/inscripcion";
 import { GenerarCuotasDTO } from "../generarCoutasDTO";
-import { Actividad } from "../../actividad/actividad";
 
 export class GenerarCuotasMasivas {
     constructor() {}

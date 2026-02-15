@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, Collection, OneToMany } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, Collection, OneToMany, ManyToMany } from "@mikro-orm/core";
 import { Inscripcion } from "../inscripcion/inscripcion";
+import { Profesor } from "../personas/tipoPersona/profesor";
 
 @Entity()
 export class Actividad {
@@ -18,4 +19,7 @@ export class Actividad {
 
     @OneToMany(() => Inscripcion, inscripcion => inscripcion.actividad)
     inscripciones = new Collection<Inscripcion>(this);
+
+    @ManyToMany(() => Profesor, profesor => profesor.actividades, { owner: true })
+    profesores = new Collection<Profesor>(this);
 }

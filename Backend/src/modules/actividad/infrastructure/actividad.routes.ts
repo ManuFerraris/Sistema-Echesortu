@@ -8,4 +8,4 @@ export const actividadRouter = Router();
 
 actividadRouter.get('/', listarActividades);
 actividadRouter.post('/', crearActividad);
-actividadRouter.put('/:id', editarActividad);
+actividadRouter.put('/actualizar/:id', editarActividad);
