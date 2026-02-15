@@ -7,6 +7,7 @@ import { orm } from "./shared/db/orm";
 import { RequestContext } from "@mikro-orm/core";
 import { authMiddleware } from "./shared/middleware/auth.middleware";
 import { authRouter } from "./modules/auth/infrastructure/auth.routes";
+import { usuarioRouter } from "./modules/usuarios/infrastructure/usuario.routes";
 import { personaRouter } from "./modules/personas/infrastructure/persona.route";
 import { cuotaRouter } from "./modules/coutas/infrastructure/cuota.routes";
 import { pagoRouter } from "./modules/pagos/infrastructure/pago.routes";
@@ -78,6 +79,7 @@ app.use("/api/inscripciones", inscripcionRouter);
 app.use("/api/actividades", actividadRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/caja", cajaRouter);
+app.use("/api/usuarios", usuarioRouter);
 
 app.use((_, res) => {
     res.status(404).json({ message: "Ruta no encontrada" });

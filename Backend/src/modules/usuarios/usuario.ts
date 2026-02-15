@@ -13,7 +13,10 @@ export class Usuario {
     password!: string;
 
     @Property({ nullable: true })
-    rol?: string;
+    rol?: "ADMIN" | "SECRETARY";
+
+    @Property()
+    activo: boolean = true;
 
     @OneToMany(() => Caja, caja => caja.usuario)
     cajas = new Collection<Caja>(this);
