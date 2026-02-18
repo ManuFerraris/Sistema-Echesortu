@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, ManyToOne, Enum, OneToMany, Collection } from "@mikro-orm/core";
-import { Persona } from "../personas/persona";
+import { Entity, PrimaryKey, Property, ManyToOne, Enum, OneToMany, Collection, OneToOne } from "@mikro-orm/core";
+import { Socio } from "../personas/tipoPersona/socio";
 import { Actividad } from "../actividad/actividad";
 import { Cuota } from "../coutas/cuota";
 
@@ -14,8 +14,8 @@ export class Inscripcion {
     @PrimaryKey()
     id!: number;
 
-    @ManyToOne(() => Persona)
-    persona!: Persona;
+    @ManyToOne(() => Socio)
+    socio!: Socio;
 
     @ManyToOne(() => Actividad)
     actividad!: Actividad;

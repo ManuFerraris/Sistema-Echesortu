@@ -37,22 +37,11 @@ export class ActualizarPersona {
         if (dto.telefono) persona.telefono = dto.telefono;
         if (dto.tipo) persona.tipo = dto.tipo;
         if(dto.fotoUrl) persona.fotoUrl = dto.fotoUrl;
-        
-        // Manejo especial para booleanos (verificar undefined, no falsy)
-        if (dto.activo !== undefined) persona.activo = dto.activo;
 
         // Manejo especial para fechas (Convertir string a Date)
         if (dto.fechaNacimiento) {
             persona.fechaNacimiento = new Date(dto.fechaNacimiento);
         }
-        
-        // Campos opcionales del grupo familiar
-        if (dto.rol_grupo_familiar) persona.rol_grupo_familiar = dto.rol_grupo_familiar;
-        
-        if (dto.fecha_ingreso_grupo) {
-            persona.fecha_ingreso_grupo = new Date(dto.fecha_ingreso_grupo);
-        }
-        // NOTA: No actualizamos 'fechaAlta' porque es un dato histórico de creación.
 
         await em.flush();
 

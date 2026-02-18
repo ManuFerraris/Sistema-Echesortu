@@ -1,5 +1,9 @@
 import { Options, MySqlDriver } from "@mikro-orm/mysql";
 import { Persona } from "../../modules/personas/persona";
+import { Socio } from "../../modules/personas/tipoPersona/socio";
+import { Proveedor } from "../../modules/personas/tipoPersona/proveedor";
+import { Profesor } from "../../modules/personas/tipoPersona/profesor";
+import { Empleado } from "../../modules/personas/tipoPersona/empleado";
 import { Actividad } from "../../modules/actividad/actividad";
 import { Inscripcion } from "../../modules/inscripcion/inscripcion";
 import { Cuota } from "../../modules/coutas/cuota";
@@ -15,7 +19,10 @@ const config: Options = {
     password: 'root',
     host: 'localhost',
     port: 3306,
-    entities: [Persona, Actividad, Inscripcion, Cuota, Ticket, Usuario, AuditLog],
+    entities: [
+        Persona, Socio, Proveedor, Profesor, Empleado, 
+        Actividad, Inscripcion, Cuota, Ticket, Usuario, AuditLog
+    ],
     subscribers: [new AuditSubscriber()],
     debug: true,
     migrations: {

@@ -12,11 +12,11 @@ export class RegistrarPago {
 
     // Cambiamos el tipo de retorno a ReceiptData para que el controller sepa qué esperar
     async ejecutar(dto: RegistrarPagoDTO, userId:number, em: EntityManager): Promise<ServiceResponse<ReceiptData | null>> {
-        console.log(`[DEBUG] Ejecutando RegistrarPago con DTO:`, dto, `y userId: ${userId}`);
+        //console.log(`[DEBUG] Ejecutando RegistrarPago con DTO:`, dto, `y userId: ${userId}`);
         const usuarioActual = await em.findOne(Usuario, { numero: userId });
 
         if (!usuarioActual) {
-            console.log(`[ERROR] Usuario con ID ${userId} no encontrado en la base de datos.`);
+            //console.log(`[ERROR] Usuario con ID ${userId} no encontrado en la base de datos.`);
             return {
                 status: 401,
                 success: false,
@@ -29,7 +29,7 @@ export class RegistrarPago {
             usuario: usuarioActual,
             estado: 'abierta' 
         });
-        console.log(`[DEBUG] Caja abierta encontrada para el usuario:`, cajaAbierta);
+        //console.log(`[DEBUG] Caja abierta encontrada para el usuario:`, cajaAbierta);
 
         if (!cajaAbierta) {
             return {
@@ -50,14 +50,17 @@ export class RegistrarPago {
 
         // 2. Buscar Cuota y RELACIONES (Necesitamos al Socio para el PDF)
         const cuota = await em.findOne(Cuota, { numero: dto.cuotaId },
-            { populate: ['inscripcion', 'inscripcion.persona', 'inscripcion.actividad'] });
+            { populate: ['inscripcion', 'inscripcion.socio.persona', 'inscripcion.actividad'] });
 
         if (!cuota) {
-            return { status: 404, success: false, messages: ["No se encontró la cuota."], data: null };
+            return {
+                status: 404,
+                success: false,
+                messages: ["No se encontró la cuota."], data: null
+            };
         }
-        console.log(`[DEBUG] Cuota encontrada:`, cuota);
+        //console.log(`[DEBUG] Cuota encontrada:`, cuota);
 
-        // 3. Procesar los Tickets (Uno por cada forma de pago)
         const ticketsGenerados: Ticket[] = [];
 
         for (const pago of dto.pagos) {
@@ -70,11 +73,10 @@ export class RegistrarPago {
             ticket.caja = cajaAbierta;
             
             ticketsGenerados.push(ticket);
-            console.log(`[DEBUG] Ticket preparado para persistir:`, ticket);
-            em.persist(ticket); // Preparamos para guardar
+            //console.log(`[DEBUG] Ticket preparado para persistir:`, ticket);
+            em.persist(ticket);
         }
 
-        // 4. Actualizar estado de la Cuota
         cuota.saldoPagado = Number(cuota.saldoPagado) + montoTotalAPagar;
         
         if (cuota.saldoPagado >= cuota.montoOriginal) {
@@ -86,11 +88,11 @@ export class RegistrarPago {
         await em.persist(cuota).flush();
         const restanPagar = Number(cuota.montoOriginal) - Number(cuota.saldoPagado);
 
-        console.log(`[DEBUG] Estado de la cuota actualizado:`, cuota);
+        //console.log(`[DEBUG] Estado de la cuota actualizado:`, cuota);
 
         // CHEQUEO DE SEGURIDAD
-        const nombreSocio = cuota.inscripcion?.persona?.nombre 
-            ? `${cuota.inscripcion.persona.nombre} ${cuota.inscripcion.persona.apellido}`
+        const nombreSocio = cuota.inscripcion?.socio?.persona?.nombre 
+            ? `${cuota.inscripcion.socio.persona.nombre} ${cuota.inscripcion.socio.persona.apellido}`
             : "Socio Desconocido";
 
         // Preparar Datos para el PDF (Mapeamos lo que pasó a la estructura del recibo)
@@ -102,8 +104,8 @@ export class RegistrarPago {
             nroComprobante: nroComprobante,
             fecha: new Date(),
             nombreSocio: nombreSocio, 
-            nroSocio: cuota.inscripcion.persona.nro,
-            emailSocio: cuota.inscripcion.persona.email,
+            nroSocio: cuota.inscripcion.socio.nro_socio,
+            emailSocio: cuota.inscripcion.socio.persona.email,
             total: montoTotalAPagar,
             restanPagar: restanPagar,
             items: dto.pagos.map(p => ({
@@ -113,7 +115,7 @@ export class RegistrarPago {
                 importe: p.monto
             }))
         };
-        console.log(`[DEBUG] Datos preparados para el PDF:`, datosParaPDF);
+        //console.log(`[DEBUG] Datos preparados para el PDF:`, datosParaPDF);
         return {
             status: 201,
             success: true,

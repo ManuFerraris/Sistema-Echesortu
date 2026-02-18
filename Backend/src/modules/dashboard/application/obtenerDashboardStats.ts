@@ -1,10 +1,9 @@
 import { EntityManager } from "@mikro-orm/mysql";
 import { ServiceResponse } from "../../../shared/types/serviceResponse";
-import { Ticket } from "../../ticket/ticket";
 import { Cuota, EstadoCuota } from "../../coutas/cuota";
 import { Inscripcion, EstadoInscripcion } from "../../inscripcion/inscripcion";
 import { DashboardStatsDTO } from "./dashboardStatsDTO";
-
+import { Socio } from "../../personas/tipoPersona/socio";
 //      Aclaracion, cuando diseñé este Caso de Uso no lo pense con la misma mirada arquitectonica
 // y tecnica como en los demas, ya que aqui por motivos de eficiencia y simpliciddad, 
 // decidi hacer operaciones y consultas directas a la base de datos usando QueryBuilder,
@@ -62,7 +61,7 @@ export class ObtenerDashboardStats {
             cantidad: Number(ranking.total) 
         } : null;
 
-        const totalSocios = await em.count(Inscripcion, { estado: EstadoInscripcion.ACTIVA });
+        const totalSocios = await em.count(Socio, { activo: true });
 
         return {
             success: true,

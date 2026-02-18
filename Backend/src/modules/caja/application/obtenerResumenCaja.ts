@@ -1,7 +1,6 @@
 import { EntityManager } from "@mikro-orm/core";
 import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Caja } from "../caja";
-import { Ticket } from "../../ticket/ticket";
 import { Usuario } from "../../usuarios/usuario";
 
 export interface ResumenCajaDTO {

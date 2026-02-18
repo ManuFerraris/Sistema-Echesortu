@@ -1,5 +1,6 @@
 export interface InscribirSocioDTO {
-    idPersona: number;
+    idSocio: number;
+    nroSocio: string;
     idActividad: number;
     fechaInicio?: Date;
 }

@@ -7,7 +7,7 @@ import { BuscarPersona } from "../application/buscarPersona";
 import { CrearPersona } from "../application/crearPersona";
 import { ActualizarPersona } from "../application/actualizarPersonas";
 import { DarDeBajaPersona } from "../application/eliminarPersona";
-import { ReactivarPersona } from "../application/reactivarPersona";
+import { ReactivarSocio } from "../application/reactivarSocio";
 import { ObtenerEstadoCuenta } from "../application/obtenerEstadoCuenta";
 import { ObtenerPersona } from "../application/obtenerPersona";
 import { ActualizarFotoPersona } from "../application/actualizarFotoPersona";
@@ -233,7 +233,7 @@ export const darDeBajaPersona = async (req: Request, res: Response):Promise<void
     }
 };
 
-export const reactivarPersonaController = async (req: Request, res: Response):Promise<void> => {
+export const reactivarSocioController = async (req: Request, res: Response):Promise<void> => {
     try{
         const {valor: codVal, error:codError} = validarCodigo(req.params.nro, 'Nro de persona');
         if(codError || codVal === undefined){
@@ -243,8 +243,7 @@ export const reactivarPersonaController = async (req: Request, res: Response):Pr
 
         const orm = req.app.locals.orm as MikroORM;
         const em = orm.em.fork();
-        const repo = new PersonaRepositoryORM(em);
-        const casoUso = new ReactivarPersona(repo);
+        const casoUso = new ReactivarSocio(em);
 
         const resultado = await casoUso.ejecutar(codVal);
 
@@ -276,10 +275,8 @@ export const getEstadoCuenta = async (req: Request, res: Response) => {
         };
         const orm = req.app.locals.orm as MikroORM;
         const em = orm.em.fork();
+        const casoUso = new ObtenerEstadoCuenta(em);
         
-        const repo = new PersonaRepositoryORM(em);
-        const casoUso = new ObtenerEstadoCuenta(repo);
-
         const resultado = await casoUso.ejecutar(codVal, em);
 
         res.status(resultado.status).json({

@@ -29,9 +29,9 @@ export class GenerarCuotasMasivas {
         // (Necesitamos el precio de la actividad, así que hacemos populate)
         const inscripciones = await em.find(Inscripcion, {
             estado: EstadoInscripcion.ACTIVA,
-            persona: { activo: true }
+            socio: { activo: true }
         }, {
-            populate: ['actividad', 'persona'] 
+            populate: ['actividad'] 
         });
 
         if (inscripciones.length === 0) {

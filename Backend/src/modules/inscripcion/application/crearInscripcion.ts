@@ -1,7 +1,7 @@
 import { EntityManager } from "@mikro-orm/core";
 import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Inscripcion, EstadoInscripcion } from "../inscripcion";
-import { Persona } from "../../personas/persona";
+import { Socio } from "../../personas/tipoPersona/socio";
 import { Actividad } from "../../actividad/actividad";
 import { Cuota, EstadoCuota } from "../../coutas/cuota";
 import { InscribirSocioDTO } from "../inscripcionSocioDTO";
@@ -11,24 +11,37 @@ export class InscribirSocio{
 
     async ejecutar(dto: InscribirSocioDTO, em: EntityManager): Promise<ServiceResponse<any>> {
         
-        const persona = await em.findOne(Persona, { nro: dto.idPersona });
-        if (!persona) return { status: 404, success: false, messages: ["Socio no encontrado"] };
+        const socio = await em.findOne(Socio, { nro: dto.idSocio });
+        const socioPorNro = await em.findOne(Socio, { nro_socio: dto.nroSocio });
+        if (!socio && !socioPorNro) return {
+            status: 404,
+            success: false,
+            messages: [`Socio con nro ${dto.idSocio} y nro_socio (interno) ${dto.nroSocio} no encontrado`]
+        };
 
         const actividad = await em.findOne(Actividad, { numero: dto.idActividad });
-        if (!actividad) return { status: 404, success: false, messages: ["Actividad no encontrada"] };
+        if (!actividad) return {
+            status: 404,
+            success: false,
+            messages: ["Actividad no encontrada"]
+        };
 
         const yaInscripto = await em.count(Inscripcion, {
-            persona,
+            socio: socio ? socio : socioPorNro!,
             actividad,
             estado: EstadoInscripcion.ACTIVA
         });
 
         if (yaInscripto > 0) {
-            return { status: 400, success: false, messages: ["El socio ya está inscripto en esta actividad."] };
+            return {
+                status: 400,
+                success: false,
+                messages: ["El socio ya está inscripto en esta actividad."]
+            };
         };
 
         const nuevaInscripcion = new Inscripcion();
-        nuevaInscripcion.persona = persona;
+        nuevaInscripcion.socio = socio ? socio : socioPorNro!;
         nuevaInscripcion.actividad = actividad;
         nuevaInscripcion.fechaInscripcion = dto.fechaInicio ? new Date(dto.fechaInicio) : new Date();
         nuevaInscripcion.estado = EstadoInscripcion.ACTIVA;

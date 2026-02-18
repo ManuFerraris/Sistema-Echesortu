@@ -30,15 +30,9 @@ export class CrearPersona {
         nuevaPersona.fechaAlta = new Date(dto.fechaAlta!);
         
         nuevaPersona.telefono = dto.telefono;
-        nuevaPersona.activo = dto.activo!;
-        nuevaPersona.rol_grupo_familiar = dto.rol_grupo_familiar;
 
         if (dto.fotoUrl) {
             nuevaPersona.fotoUrl = dto.fotoUrl;
-        };
-        
-        if (dto.fecha_ingreso_grupo) {
-            nuevaPersona.fecha_ingreso_grupo = new Date(dto.fecha_ingreso_grupo);
         };
 
         await this.repo.crearPersona(nuevaPersona);

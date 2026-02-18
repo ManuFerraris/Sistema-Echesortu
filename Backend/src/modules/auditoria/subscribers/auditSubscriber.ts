@@ -1,16 +1,17 @@
-import { EventSubscriber, EventArgs, EntityName, RequestContext } from "@mikro-orm/core";
+import { EventSubscriber, EventArgs, EntityName } from "@mikro-orm/core";
 import { userContext } from "../../utils/userContext";
 import { AuditLog } from "../audit_log";
 import { Cuota } from "../../coutas/cuota";
 import { Ticket } from "../../ticket/ticket";
 import { Persona } from "../../personas/persona";
 import { Inscripcion } from "../../inscripcion/inscripcion";
+import { Caja } from "../../caja/caja";
 
 // Definimos qué entidades queremos vigilar
 export class AuditSubscriber implements EventSubscriber {
     
     getSubscribedEntities(): EntityName<any>[] {
-        return [Cuota, Ticket, Persona, Inscripcion];
+        return [Cuota, Ticket, Persona, Inscripcion, Caja];
     }
 
     private getUser(): string {

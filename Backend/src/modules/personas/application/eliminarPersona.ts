@@ -1,6 +1,10 @@
 import { PersonaRepository } from "../personaRepository";
 import { ServiceResponse } from "../../../shared/types/serviceResponse";
 
+// Por el momento no sirve porque ahora se da de baja el socio y no la persona,
+// pero lo dejo por si en el futuro se quiere implementar una baja lógica para
+// personas que no son socios o para mantener un historial de personas dadas de baja.
+
 export class DarDeBajaPersona {
     constructor(private readonly repo:PersonaRepository){}
 
@@ -14,15 +18,8 @@ export class DarDeBajaPersona {
             };
         };
 
-        if (!persona.activo) {
-            return {
-                status: 400,
-                success: false,
-                messages: ["La persona ya se encuentra dada de baja."]
-            };
-        };
+        //persona.activo = false; // Damos de baja la persona (sin eliminarla físicamente)
 
-        persona.activo = false;
         await this.repo.guardar(persona);
         return {
             status: 200,

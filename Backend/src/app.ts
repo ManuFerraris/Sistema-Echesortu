@@ -6,6 +6,7 @@ import 'dotenv/config';
 import { orm } from "./shared/db/orm";
 import { RequestContext } from "@mikro-orm/core";
 import { authMiddleware } from "./shared/middleware/auth.middleware";
+import { socioRouter } from "./modules/personas/infrastructure/socio.routes";
 import { authRouter } from "./modules/auth/infrastructure/auth.routes";
 import { usuarioRouter } from "./modules/usuarios/infrastructure/usuario.routes";
 import { personaRouter } from "./modules/personas/infrastructure/persona.route";
@@ -80,6 +81,7 @@ app.use("/api/actividades", actividadRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/caja", cajaRouter);
 app.use("/api/usuarios", usuarioRouter);
+app.use("/api/socios", socioRouter);
 
 app.use((_, res) => {
     res.status(404).json({ message: "Ruta no encontrada" });

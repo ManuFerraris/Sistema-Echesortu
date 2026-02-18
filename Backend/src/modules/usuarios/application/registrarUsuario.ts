@@ -3,10 +3,17 @@ import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Usuario } from "../usuario";
 import * as bcrypt from "bcrypt";
 
+interface RegistrarUsuarioDTO {
+    nombreUsuario: string;
+    password: string;
+    rol: "ADMIN" | "SECRETARY";
+}
+
 export class RegistrarUsuario {
-    async ejecutar(dto: { usuario: string, password: string, rol: "ADMIN" | "SECRETARY" }, em: EntityManager): Promise<ServiceResponse<Usuario>> {
+    async ejecutar(dto: RegistrarUsuarioDTO, em: EntityManager): Promise<ServiceResponse<Usuario>> {
         
-        const existe = await em.count(Usuario, { nombreUsuario: dto.usuario });
+        console.log('[DEBUG] Validando datos para registrar usuario:', dto);
+        const existe = await em.count(Usuario, { nombreUsuario: dto.nombreUsuario });
         if (existe > 0) {
             return { success: false, status: 400, messages: ["El usuario ya existe"] };
         };
@@ -23,10 +30,11 @@ export class RegistrarUsuario {
         const hashedPassword = await bcrypt.hash(dto.password, saltRounds);
 
         const nuevo = new Usuario();
-        nuevo.nombreUsuario = dto.usuario;
+        nuevo.nombreUsuario = dto.nombreUsuario;
         nuevo.password = hashedPassword;
         nuevo.rol = dto.rol;
 
+        console.log('[DEBUG] Usuario a registrar (antes de guardar):', nuevo);
         await em.persist(nuevo).flush();
 
         return {

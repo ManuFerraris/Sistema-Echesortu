@@ -28,6 +28,7 @@ export const findAll = async (req: Request, res: Response): Promise<void> => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try{
+        console.log('[DEBUG] Intentando registrar usuario con datos:', req.body);
         const em = (req.app.locals.orm as MikroORM).em.fork();
         const useCase = new RegistrarUsuario();
         const result = await useCase.ejecutar(req.body, em);
@@ -35,6 +36,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return;
     }catch(error:unknown){
         if (error instanceof Error) {
+            console.log('[ERROR] Error al registrarse:', error);
             console.error('Error al registrarse', error.message);
             res.status(500).json({ error: "Error al registrarse" });
             return;

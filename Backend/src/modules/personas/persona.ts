@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, Collection, OneToMany } from "@mikro-orm/core";
-import { Inscripcion } from "../inscripcion/inscripcion";
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 
 @Entity()
 export class Persona {
@@ -14,9 +13,6 @@ export class Persona {
 
     @Property({ nullable: true })
     tipo: "fisica" | "juridica" = "fisica"; // Por defecto, asumimos persona física
-
-    @Property({ nullable: true })
-    socio?: boolean = false; // Por defecto, no es socio, es solo una persona
 
     @Property({ unique: true })
     dni_cuit!: string;
@@ -36,21 +32,13 @@ export class Persona {
     @Property()
     fechaAlta: Date = new Date();
 
-    @Property({ default: true })
-    activo: boolean = true;
-
-    @Property({ nullable: true })
-    rol_grupo_familiar?: string;
-
-    @Property({ nullable: true })
-    fecha_ingreso_grupo?: Date;
-
-    @Property({ nullable: true })
-    fechaReincorporacion?: Date;
-
     @Property({ nullable: true })
     fotoUrl?: string;
 
-    @OneToMany(() => Inscripcion, inscripcion => inscripcion.persona)
-    inscripciones = new Collection<Inscripcion>(this);
+    // GETTER VIRTUAL: Nombre completo
+    @Property({ persist: false }) 
+    get nombreCompleto(): string {
+        return `${this.apellido}, ${this.nombre}`;
+    }
+
 }

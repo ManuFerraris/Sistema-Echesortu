@@ -10,7 +10,7 @@ export interface ReceiptData {
     emailSocio: string;
     fecha: Date;
     nombreSocio: string;
-    nroSocio: number;
+    nroSocio: number | string;
     restanPagar: number; // Lo que queda pendiente después de este pago
     items: ReceiptItem[]; // Array (1 o más meses)
     total: number;        // Suma total de los importes

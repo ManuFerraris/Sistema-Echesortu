@@ -1,28 +1,30 @@
 import { EntityManager } from "@mikro-orm/core";
-import { PersonaRepository } from "../personaRepository";
 import { ServiceResponse } from "../../../shared/types/serviceResponse";
 import { Inscripcion } from "../../inscripcion/inscripcion";
 import { EstadoCuentaDTO, CuotaResumenDTO } from "../dtos/estadoCuentaDTO";
+import { Socio } from "../tipoPersona/socio";
 
 export class ObtenerEstadoCuenta {
-    constructor(private readonly repo: PersonaRepository) {}
+    constructor(
+        private readonly em: EntityManager
+    ) {}
 
-    async ejecutar(id: number, em: EntityManager): Promise<ServiceResponse<EstadoCuentaDTO>> {
+    async ejecutar(nroSoc: number, em: EntityManager): Promise<ServiceResponse<EstadoCuentaDTO>> {
         
         // 1. Buscamos la Persona
-        const persona = await this.repo.buscarPorId(id);
+        const socio = await this.em.findOne(Socio,  { nro: nroSoc }, { populate: ['persona'] });
 
-        if (!persona) {
+        if (!socio) {
             return {
                 status: 404,
                 success: false,
-                messages: ["No se encontró la persona con el ID proporcionado."],
+                messages: ["No se encontró al socio con el ID proporcionado."],
             };
         }
 
         // 2. Buscamos Inscripciones (Usando el EM que recibimos para hacer populate)
         const inscripciones = await em.find(Inscripcion,
-            { persona }, 
+            { socio }, 
             { populate: ['actividad', 'cuotas'] }
         );
 
@@ -73,12 +75,12 @@ export class ObtenerEstadoCuenta {
         // 5. Construimos el objeto final
         const respuesta: EstadoCuentaDTO = {
             cliente: {
-                id: persona.nro,
-                nombre: persona.nombre,
-                apellido: persona.apellido,
-                dni: persona.dni_cuit,
-                fotoUrl: persona.fotoUrl || undefined,
-                estado: persona.activo
+                id: socio.nro,
+                nombre: socio.persona.nombre,
+                apellido: socio.persona.apellido!, // El apellido siempre viene porque la inscripcion es de una persona FISICA.
+                dni: socio.persona.dni_cuit,
+                fotoUrl: socio.persona.fotoUrl || undefined,
+                estado: socio.activo
             },
             resumenFinanciero: {
                 totalDeudaClub: totalDeuda,
