@@ -23,12 +23,18 @@ export function NuevoSocioPage() {
         email: '',
         telefono: '',
         domicilio: '',
-        tipo: 'fisica'
+        tipo: 'fisica',
+        categoria: '',
+        vitalicio: false
     });
 
     // Manejador genérico para todos los inputs
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value, type } = e.target;
+        // Si es checkbox, usamos 'checked', si no, usamos 'value'
+        const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+        
+        setFormData(prev => ({ ...prev, [name]: finalValue }));
     };
 
     // 2. Manejador de Selección de Imagen
@@ -69,6 +75,8 @@ export function NuevoSocioPage() {
             payload.append('email', formData.email);
             payload.append('domicilio', formData.domicilio);
             payload.append('tipo', formData.tipo.toLowerCase());
+            payload.append('categoria', formData.categoria);
+            payload.append('vitalicio', formData.vitalicio ? 'true' : 'false');
             
             if (formData.fechaNacimiento) payload.append('fechaNacimiento', formData.fechaNacimiento);
             if (formData.telefono) payload.append('telefono', formData.telefono);
@@ -83,7 +91,7 @@ export function NuevoSocioPage() {
             }
 
             // D. Disparamos la API (Axios detecta automáticamente que es FormData y ajusta los headers)
-            const res = await api.post(API_ROUTES.personas.create, payload, {
+            const res = await api.post(API_ROUTES.socios.create, payload, {
                 headers: {
                     'Content-Type': 'multipart/form-data', 
                 }
@@ -185,6 +193,19 @@ export function NuevoSocioPage() {
                         <div>
                             <label>Teléfono</label>
                             <input name="telefono" value={formData.telefono} onChange={handleChange} style={{ width: '100%', padding: '10px' }} />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div>
+                            <label>Categoria *</label>
+                            <input type="text" required name="categoria" value={formData.categoria} onChange={handleChange} style={{ width: '100%', padding: '10px' }} />
+                        </div>
+                        <div>
+                            <label>Vitalicio</label>
+                            <input type="checkbox" name="vitalicio" checked={formData.vitalicio} onChange={handleChange} 
+                                style={{ transform: 'scale(1.5)', marginLeft: '10px' }} 
+                            />
                         </div>
                     </div>
 

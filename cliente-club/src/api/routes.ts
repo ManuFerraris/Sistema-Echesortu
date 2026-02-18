@@ -15,6 +15,10 @@ export const API_ROUTES = {
         search: (term: string) => `/api/personas/buscar?q=${term}`,
         updatePicture: (id: number | string) => `/api/personas/${id}/foto`,
     },
+    socios:{
+        list: '/api/socios/socios',
+        create: '/api/socios',
+    },
     pagos: {
         create: '/api/pagos',
         getTickets: '/api/tickets',

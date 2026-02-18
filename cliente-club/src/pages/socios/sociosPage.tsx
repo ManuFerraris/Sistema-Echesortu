@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
 import { API_ROUTES } from '../../api/routes';
 import { Search, Plus, Edit, Trash2, User } from 'lucide-react';
-import type { GetPersonas } from '../../types/index';
+import type { Socio } from '../../types/index';
 
 export function SociosPage() {
     const navigate = useNavigate();
-    const [socios, setSocios] = useState<GetPersonas[]>([]);
+    const [socios, setSocios] = useState<Socio[]>([]);
     const [loading, setLoading] = useState(true);
     const [filtro, setFiltro] = useState('');
 
@@ -16,7 +16,7 @@ export function SociosPage() {
         try {
             // Asumimos que este endpoint trae el listado
             // Podrías necesitar paginación a futuro si son más de 1000
-            const res = await api.get(API_ROUTES.personas.list);
+            const res = await api.get(API_ROUTES.socios.list);
             console.log("[DEBUG] Respuesta API:", res);
             setSocios(res.data.data || []);
         } catch (error) {
@@ -32,9 +32,10 @@ export function SociosPage() {
 
     // Filtrado en cliente (rápido para < 500 socios)
     const sociosFiltrados = socios.filter(s => 
-        s.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-        s.apellido.toLowerCase().includes(filtro.toLowerCase()) ||
-        (s.dni_cuit && s.dni_cuit.includes(filtro))
+        s.persona.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+        s.persona.apellido.toLowerCase().includes(filtro.toLowerCase()) ||
+        s.persona.dni_cuit.includes(filtro) ||
+        s.nro_socio.includes(filtro)
     );
 
     return (
@@ -44,7 +45,7 @@ export function SociosPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>Padrón de Socios</h1>
                 <button 
-                    onClick={() => navigate('/socios/nuevo')} 
+                    onClick={() => navigate('/nuevo-socio')} 
                     style={{ 
                         background: '#2563eb', color: 'white', border: 'none', 
                         padding: '10px 20px', borderRadius: '8px', cursor: 'pointer',
@@ -89,14 +90,14 @@ export function SociosPage() {
                             <tr><td colSpan={5} style={{ padding: '30px', textAlign: 'center' }}>No se encontraron socios.</td></tr>
                         ) : (
                             sociosFiltrados.map(socio => (
-                                <tr key={socio.nro} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <tr key={socio.nro_socio} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                     
                                     {/* COLUMNA: FOTO Y NOMBRE */}
                                     <td style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        {socio.fotoUrl ? (
+                                        {socio.persona.fotoUrl ? (
                                             <img 
-                                                src={socio.fotoUrl} 
-                                                alt={socio.nombre} 
+                                                src={socio.persona.fotoUrl} 
+                                                alt={socio.persona.nombre} 
                                                 style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
                                             />
                                         ) : (
@@ -105,18 +106,18 @@ export function SociosPage() {
                                             </div>
                                         )}
                                         <div>
-                                            <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{socio.apellido}, {socio.nombre}</div>
-                                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>ID: #{socio.nro}</div>
+                                            <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{socio.persona.apellido}, {socio.persona.nombre}</div>
+                                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>ID: #{socio.nro_socio}</div>
                                         </div>
                                     </td>
 
                                     {/* COLUMNA: DNI */}
-                                    <td style={{ padding: '15px', color: '#334155' }}>{socio.dni_cuit}</td>
+                                    <td style={{ padding: '15px', color: '#334155' }}>{socio.persona.dni_cuit}</td>
 
                                     {/* COLUMNA: CONTACTO */}
                                     <td style={{ padding: '15px' }}>
-                                        <div style={{ fontSize: '14px', color: '#334155' }}>{socio.email}</div>
-                                        <div style={{ fontSize: '12px', color: '#64748b' }}>{socio.telefono || '-'}</div>
+                                        <div style={{ fontSize: '14px', color: '#334155' }}>{socio.persona.email}</div>
+                                        <div style={{ fontSize: '12px', color: '#64748b' }}>{socio.persona.telefono || '-'}</div>
                                     </td>
 
                                     {/* COLUMNA: ESTADO */}
@@ -133,7 +134,7 @@ export function SociosPage() {
                                     {/* COLUMNA: ACCIONES */}
                                     <td style={{ padding: '15px', textAlign: 'right' }}>
                                         <button 
-                                            onClick={() => navigate(`/socios/editar/${socio.nro}`)}
+                                            onClick={() => navigate(`/socios/editar/${socio.nro_socio}`)}
                                             style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px', color: '#64748b' }}
                                             title="Editar"
                                         >

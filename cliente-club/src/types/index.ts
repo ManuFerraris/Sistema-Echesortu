@@ -25,8 +25,12 @@ export interface DetalleActividad {
 }
 
 export interface EstadoCuenta {
-    cliente: { id: number, nombre: string; apellido: string; dni: string; fotoUrl?: string };
-    resumenFinanciero: { totalDeudaClub: number; totalPagadoHistorico: number };
+    cliente: Socio;
+    resumenFinanciero: {
+        totalDeudaClub: number;
+        totalPagadoHistorico: number;
+        saldoFavor: number;
+    };
     detalle: DetalleActividad[];
 }
 
@@ -55,13 +59,35 @@ export interface DashboardStats {
 }
 
 export interface Persona {
-    nro?: number; // Lo cambiamos a number porque en backend suele ser INT
-    id?: number;  // ID también suele ser número
+    id?: number;
     nombre: string;
     apellido: string;
     dni_cuit: string;
+    fechaNacimiento: string;
+    email?: string;
+    telefono?: string;
+    domicilio: string;
     fotoUrl?: string;
-    estado: boolean;
+    nombreCompleto?: string;
+}
+
+// 2. El Rol Socio
+export interface Socio {
+    id: number;
+    nro_socio: string;
+    categoria: string;
+    vitalicio: boolean;
+    activo: boolean;
+    fechaAlta: string;
+    fechaBaja?: string;
+    
+    // CAMPOS MUDADOS
+    rol_grupo_familiar?: string;
+    fecha_ingreso_grupo?: string;
+    fechaReincorporacion?: string;
+
+    // LA RELACIÓN CLAVE
+    persona: Persona; 
 }
 
 export interface GetPersonas {
